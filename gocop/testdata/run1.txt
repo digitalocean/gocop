@@ -1,0 +1,10 @@
+--- FAIL: TestWillFail (0.00s)
+    failing_test.go:11: number does equal eleven
+FAIL
+FAIL	github.com/digitalocean/gocop/sample/fail	1.572s
+--- FAIL: TestMightFail (0.00s)
+    flaky_test.go:11: integer is factor of 3
+FAIL
+FAIL	github.com/digitalocean/gocop/sample/flaky	1.068s
+?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+ok  	github.com/digitalocean/gocop/sample/pass	0.543s

@@ -1,0 +1,16 @@
+## AUTO-DETECT
+##   Handle line endings automatically for files detected as
+##   text and leave all files detected as binary untouched.
+##   This will handle all files NOT defined below.
+* text=auto
+
+# Explicitly checkout files below with LF line delimiters
+# Helps with cross platform support
+*.txt   text eol=lf
+*.md    text eol=lf
+*.go    text eol=lf
+*.mod   text eol=lf
+*.sum   text eol=lf
+
+LICENSE     text eol=lf
+Makefile    text eol=lf

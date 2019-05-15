@@ -1,0 +1,76 @@
+package gocop_test
+
+import (
+	"testing"
+
+	"github.com/apoydence/onpar"
+	"github.com/apoydence/onpar/expect"
+	"github.com/apoydence/onpar/matchers"
+	"github.com/digitalocean/gocop/gocop"
+)
+
+func TestParseFile(t *testing.T) {
+	o := onpar.New()
+	defer o.Run(t)
+
+	o.BeforeEach(func(t *testing.T) expect.Expectation {
+		return expect.New(t)
+	})
+
+	tests := []struct {
+		name  string
+		input string
+		want  []string
+	}{
+		{
+			name:  "finds multiple failed packages",
+			input: "testdata/run0.txt",
+			want:  []string{"github.com/digitalocean/gocop/sample/fail", "github.com/digitalocean/gocop/sample/flaky"},
+		},
+		{
+			name:  "finds single failed packages",
+			input: "testdata/run2.txt",
+			want:  []string{"github.com/digitalocean/gocop/sample/fail"},
+		},
+	}
+
+	for _, tt := range tests {
+		o.Spec(tt.name, func(expect expect.Expectation) {
+			got := gocop.ParseFile(tt.input)
+			expect(got).To(matchers.Equal(tt.want))
+		})
+	}
+}
+
+func TestFlakyFile(t *testing.T) {
+	o := onpar.New()
+	defer o.Run(t)
+
+	o.BeforeEach(func(t *testing.T) expect.Expectation {
+		return expect.New(t)
+	})
+
+	tests := []struct {
+		name  string
+		input []string
+		want  []string
+	}{
+		{
+			name:  "finds zero flaky packages",
+			input: []string{"testdata/run0.txt", "testdata/run1.txt", "testdata/run3.txt"},
+			want:  []string{},
+		},
+		{
+			name:  "finds single flaky package",
+			input: []string{"testdata/run0.txt", "testdata/run1.txt", "testdata/run2.txt", "testdata/run3.txt"},
+			want:  []string{"github.com/digitalocean/gocop/sample/flaky"},
+		},
+	}
+
+	for _, tt := range tests {
+		o.Spec(tt.name, func(expect expect.Expectation) {
+			got := gocop.FlakyFile(tt.input...)
+			expect(got).To(matchers.Equal(tt.want))
+		})
+	}
+}
