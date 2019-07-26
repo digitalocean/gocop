@@ -24,5 +24,5 @@ func init() {
 	RootCmd.AddCommand(failedCmd)
 
 	failedCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
-	failedCmd.MarkFlagRequired("retests")
+	failedCmd.MarkFlagRequired("src")
 }
