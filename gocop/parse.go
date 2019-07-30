@@ -46,12 +46,22 @@ func ParseFailed(output []byte) []string {
 	return packages
 }
 
-// ParseFile reads a file to Parse() failed packages
-func ParseFile(path string) []string {
+// ParseFileFailed reads a file to Parse() failed packages
+func ParseFileFailed(path string) []string {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return ParseFailed(content)
+}
+
+// ParseFile reads a file to Parse() results
+func ParseFile(path string) [][]string {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return Parse(content)
 }

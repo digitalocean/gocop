@@ -3,7 +3,6 @@
 package gocop_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -27,18 +26,25 @@ func TestInsertResults(t *testing.T) {
 	db := gocop.ConnectDB(host, port, user, password)
 	defer db.Close()
 
-	runID, err := gocop.InsertRun(db, 2, "test_repo", "master", "1")
+	run := gocop.TestRun{BuildID: 2,
+		Repo:    "test_repo",
+		Branch:  "master",
+		Created: time.Now().UTC(),
+	}
+	runID, err := gocop.InsertRun(db, run)
 	if err != nil {
 		t.Error(err)
 	}
 
 	testResults := make([]gocop.TestResult, 0)
-	result := gocop.TestResult{Name: "test1", Result: "fail", Duration: time.Second}
+	result := gocop.TestResult{Name: "test1",
+		Result:   "fail",
+		Created:  run.Created,
+		Duration: time.Second}
 	testResults = append(testResults, result)
 	_, err = gocop.InsertTests(db, runID, testResults)
 	if err != nil {
 		t.Error(err)
-		fmt.Println(err)
 	}
 
 	rows, err := gocop.GetTests(db, runID)

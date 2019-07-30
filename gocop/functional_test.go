@@ -9,7 +9,7 @@ import (
 	"github.com/digitalocean/gocop/gocop"
 )
 
-func TestParseFile(t *testing.T) {
+func TestParseFileFailed(t *testing.T) {
 	o := onpar.New()
 	defer o.Run(t)
 
@@ -36,7 +36,7 @@ func TestParseFile(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := gocop.ParseFile(tt.input)
+			got := gocop.ParseFileFailed(tt.input)
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
