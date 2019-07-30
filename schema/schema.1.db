@@ -1,7 +1,8 @@
 CREATE TABLE run (
   build_id    BIGINT PRIMARY KEY,
-  started     TIMESTAMPTZ,
+  created     TIMESTAMPTZ,
   duration    INTEGER,
+  run_cmd     TEXT,
   repo        TEXT,
   branch      TEXT,
   sha         TEXT
@@ -12,6 +13,5 @@ CREATE TABLE test (
   run_id    BIGINT REFERENCES run(build_id) ON DELETE CASCADE,
   result    TEXT CHECK (result in ('pass', 'fail', 'flaky', 'skip')),
   name      TEXT,
-  duration  INTEGER,
-  started   TIMESTAMPTZ
+  duration  INTEGER
 );

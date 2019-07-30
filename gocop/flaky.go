@@ -12,7 +12,7 @@ func Flaky(runs ...[]byte) []string {
 	flaky := make([]string, 0)
 
 	for _, run := range runs {
-		pkgs := Parse(run)
+		pkgs := ParseFailed(run)
 		for _, pkg := range pkgs {
 			_, ok := failCount[pkg]
 			if !ok {

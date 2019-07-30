@@ -38,18 +38,18 @@ func ConnectDB(host, port, user, password string) *sql.DB {
 }
 
 // InsertRun inserts a new entry to the run table in the database
-func InsertRun(db *sql.DB, buildID int64, repo, branch, sha string, started time.Time) (int64, error) {
-	testRunInsert := `INSERT INTO run (build_id, repo, branch, sha, started)
-		VALUES ($1, $2, $3, $4)
+func InsertRun(db *sql.DB, buildID int64, repo, branch, sha, cmd string, created time.Time) (int64, error) {
+	testRunInsert := `INSERT INTO run (build_id, repo, branch, sha, run_cmd, created)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING build_id`
 	id := int64(0)
-	err := db.QueryRow(testRunInsert, buildID, repo, branch, sha, started).Scan(&id)
+	err := db.QueryRow(testRunInsert, buildID, repo, branch, sha, cmd, created).Scan(&id)
 	return id, err
 }
 
 // GetRun retrieves information about a run
 func GetRun(db *sql.DB, buildID int64) *sql.Row {
-	runSelect := `SELECT build_id, started, repo, branch, sha
+	runSelect := `SELECT build_id, created, repo, branch, sha, run_cmd
 		FROM run
 		WHERE build_id=$1`
 
@@ -84,7 +84,7 @@ func InsertTests(db *sql.DB, runID int64, testResults []TestResult) (sql.Result,
 
 // GetTests retrieves test results for a build
 func GetTests(db *sql.DB, buildID int64) (*sql.Rows, error) {
-	runSelect := `SELECT id, run_id, result, name, duration, started
+	runSelect := `SELECT id, run_id, result, name, duration
 		FROM test
 		WHERE run_id=$1`
 

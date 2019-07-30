@@ -1,3 +1,5 @@
+// +build integration
+
 package gocop_test
 
 import (

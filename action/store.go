@@ -17,6 +17,7 @@ var buildID int64
 var config string
 var sha string
 var start string
+var runCommand string
 
 var testResults []gocop.TestResult
 
@@ -54,7 +55,7 @@ var storeCmd = &cobra.Command{
 			startTime = time.Now().UTC()
 		}
 
-		id, err := gocop.InsertRun(db, buildID, repo, branch, sha, startTime)
+		id, err := gocop.InsertRun(db, buildID, repo, branch, sha, runCommand, startTime)
 		if err != nil {
 			panic(err)
 		}
@@ -76,16 +77,18 @@ func init() {
 
 	storeCmd.Flags().StringVarP(&user, "user", "u", "postgres", "database username")
 
-	storeCmd.Flags().StringVarP(&repo, "repo", "g", "master", "repository name")
+	storeCmd.Flags().StringVarP(&repo, "repo", "g", "", "repository name")
 
-	storeCmd.Flags().StringVarP(&branch, "branch", "b", "", "branch name")
+	storeCmd.Flags().StringVarP(&branch, "branch", "b", "master", "branch name")
 
 	storeCmd.Flags().Int64VarP(&buildID, "bld-id", "i", 0, "build id")
 	storeCmd.MarkFlagRequired("build-id")
 
+	storeCmd.Flags().StringVarP(&runCommand, "cmd", "c", "", "test execution command")
+
 	storeCmd.Flags().StringVarP(&sha, "sha", "z", "", "git sha of test run")
 
-	storeCmd.Flags().StringVarP(&start, "time", "m", "", "start time of test run")
+	storeCmd.Flags().StringVarP(&start, "time", "m", "", "time of test run")
 
 	storeCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
 
