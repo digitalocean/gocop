@@ -1,7 +1,7 @@
-# github.com/apoydence/onpar v0.0.0-20181125144932-f2f06780798d
-github.com/apoydence/onpar
-github.com/apoydence/onpar/expect
-github.com/apoydence/onpar/matchers
+# github.com/poy/onpar v0.0.0-20181125144932-f2f06780798d
+github.com/poy/onpar
+github.com/poy/onpar/expect
+github.com/poy/onpar/matchers
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
 # github.com/poy/onpar v0.0.0-20181125144932-f2f06780798d
