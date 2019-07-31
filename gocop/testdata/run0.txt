@@ -1,10 +1,10 @@
+# github.com/digitalocean/gocop/sample/failbuild [github.com/digitalocean/gocop/sample/failbuild.test]
+sample\failbuild\failbuild.go:3:1: syntax error: non-declaration statement outside function body
 --- FAIL: TestWillFail (0.00s)
     failing_test.go:11: number does equal eleven
 FAIL
-FAIL	github.com/digitalocean/gocop/sample/fail	0.533s
---- FAIL: TestMightFail (0.00s)
-    flaky_test.go:11: integer is factor of 3
-FAIL
-FAIL	github.com/digitalocean/gocop/sample/flaky	1.042s
+FAIL	github.com/digitalocean/gocop/sample/fail	0.664s
+FAIL	github.com/digitalocean/gocop/sample/failbuild [build failed]
+ok  	github.com/digitalocean/gocop/sample/flaky	0.444s
 ?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
-ok  	github.com/digitalocean/gocop/sample/pass	1.543s
+ok  	github.com/digitalocean/gocop/sample/pass	0.231s
