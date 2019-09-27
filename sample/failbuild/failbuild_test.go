@@ -1,4 +1,4 @@
-package fail
+package failbuild
 
 import (
 	"testing"

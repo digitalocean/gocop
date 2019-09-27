@@ -3,10 +3,11 @@ package gocop_test
 import (
 	"testing"
 
+	"github.com/digitalocean/gocop/gocop"
 	"github.com/poy/onpar"
 	"github.com/poy/onpar/expect"
 	"github.com/poy/onpar/matchers"
-	"github.com/digitalocean/gocop/gocop"
+	. "github.com/poy/onpar/matchers"
 )
 
 func TestParseFileFailed(t *testing.T) {
@@ -29,7 +30,7 @@ func TestParseFileFailed(t *testing.T) {
 		},
 		{
 			name:  "finds single failed packages",
-			input: "testdata/run2.txt",
+			input: "testdata/run1.txt",
 			want:  []string{"github.com/digitalocean/gocop/sample/fail"},
 		},
 	}
@@ -37,7 +38,7 @@ func TestParseFileFailed(t *testing.T) {
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
 			got := gocop.ParseFileFailed(tt.input)
-			expect(got).To(matchers.Equal(tt.want))
+			expect(got).To(Equal(tt.want))
 		})
 	}
 }

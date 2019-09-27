@@ -1,4 +1,4 @@
-package fail
+package failbuild
 
 fun init() {
 	// weee

@@ -7,7 +7,7 @@ import (
 
 	"github.com/poy/onpar"
 	"github.com/poy/onpar/expect"
-	"github.com/poy/onpar/matchers"
+	. "github.com/poy/onpar/matchers"
 )
 
 func TestFailedPackages(t *testing.T) {
@@ -33,7 +33,7 @@ func TestFailedPackages(t *testing.T) {
 		{
 			name:   "finds single failed packages",
 			action: "failed",
-			input:  "gocop/testdata/run2.txt",
+			input:  "gocop/testdata/run1.txt",
 			want:   "github.com/digitalocean/gocop/sample/fail",
 		},
 	}
@@ -44,8 +44,9 @@ func TestFailedPackages(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
+			log.Printf("%s\n\n", got)
 
-			expect(string(got)).To(matchers.Equal(tt.want))
+			expect(string(got)).To(Equal(tt.want))
 		})
 	}
 }
@@ -81,8 +82,8 @@ func TestFlakyPackages(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-
-			expect(string(got)).To(matchers.Equal(tt.want))
+			log.Printf("%s\n\n", got)
+			expect(string(got)).To(Equal(tt.want))
 		})
 	}
 }
