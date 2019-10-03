@@ -13,8 +13,6 @@ import (
 	_ "github.com/lib/pq" // import postgres driver
 )
 
-const dbname = "postgres"
-
 // TestRun contains data about a test run
 type TestRun struct {
 	Repo     string
@@ -39,10 +37,10 @@ type TestResult struct {
 }
 
 // ConnectDB connects to the database
-func ConnectDB(host, port, user, password string) *sql.DB {
+func ConnectDB(host, port, user, password, dbname, sslmode string) *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		"password=%s dbname=%s sslmode=%s",
+		host, port, user, password, dbname, sslmode)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatal(err)

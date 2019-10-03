@@ -7,19 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var host string
-var port string
-var user string
-var password string
-var repo string
-var branch string
+var host, port, dbName, user, password, sslMode, repo, branch, config, sha, start, runCommand string
 var buildID int64
-var config string
-var sha string
-var start string
-var runCommand string
-var short bool
-var race bool
+var short, race bool
 var tags []string
 
 var testResults []gocop.TestResult
@@ -30,7 +20,7 @@ var storeCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		db := gocop.ConnectDB(host, port, user, password)
+		db := gocop.ConnectDB(host, port, user, password, dbName, sslMode)
 		defer db.Close()
 
 		run := gocop.TestRun{
@@ -102,6 +92,8 @@ func init() {
 	RootCmd.AddCommand(storeCmd)
 	storeCmd.Flags().StringVarP(&host, "host", "a", "localhost", "database host")
 	storeCmd.Flags().StringVarP(&port, "port", "t", "5432", "database port")
+	storeCmd.Flags().StringVarP(&dbName, "database", "z", "postgres", "database name")
+	storeCmd.Flags().StringVarP(&sslMode, "ssl", "y", "require", "database ssl mode")
 	storeCmd.Flags().StringVarP(&password, "pass", "p", "", "database password")
 	storeCmd.MarkFlagRequired("pass")
 	storeCmd.Flags().StringVarP(&user, "user", "u", "postgres", "database username")

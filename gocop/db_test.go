@@ -21,9 +21,11 @@ func getenv(key, fallback string) string {
 func TestInsertResults(t *testing.T) {
 	host := getenv("DB_HOST", "localhost")
 	port := getenv("DB_PORT", "5432")
+	name := getenv("DB_NAME", "postgres")
+	ssl := getenv("DB_SSL", "disable")
 	user := getenv("DB_USER", "postgres")
 	password := getenv("DB_PASS", "testuser")
-	db := gocop.ConnectDB(host, port, user, password)
+	db := gocop.ConnectDB(host, port, user, password, name, ssl)
 	defer db.Close()
 
 	run := gocop.TestRun{BuildID: 2,
