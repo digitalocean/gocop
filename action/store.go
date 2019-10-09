@@ -92,7 +92,7 @@ func init() {
 	RootCmd.AddCommand(storeCmd)
 	storeCmd.Flags().StringVarP(&host, "host", "a", "localhost", "database host")
 	storeCmd.Flags().StringVarP(&port, "port", "t", "5432", "database port")
-	storeCmd.Flags().StringVarP(&dbName, "database", "z", "postgres", "database name")
+	storeCmd.Flags().StringVarP(&dbName, "database", "x", "postgres", "database name")
 	storeCmd.Flags().StringVarP(&sslMode, "ssl", "y", "require", "database ssl mode")
 	storeCmd.Flags().StringVarP(&password, "pass", "p", "", "database password")
 	storeCmd.MarkFlagRequired("pass")
