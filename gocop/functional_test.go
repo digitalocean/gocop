@@ -26,12 +26,12 @@ func TestParseFileFailed(t *testing.T) {
 		{
 			name:  "finds multiple failed packages",
 			input: "testdata/run0.txt",
-			want:  []string{"github.com/digitalocean/gocop/sample/fail", "github.com/digitalocean/gocop/sample/flaky"},
+			want:  []string{"github.com/digitalocean/gocop/sample/fail", "github.com/digitalocean/gocop/sample/failbuild", "github.com/digitalocean/gocop/sample/flaky"},
 		},
 		{
 			name:  "finds single failed packages",
 			input: "testdata/run1.txt",
-			want:  []string{"github.com/digitalocean/gocop/sample/fail"},
+			want:  []string{"github.com/digitalocean/gocop/sample/fail", "github.com/digitalocean/gocop/sample/failbuild"},
 		},
 	}
 
