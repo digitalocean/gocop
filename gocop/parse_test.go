@@ -47,6 +47,17 @@ func TestParseFailed(t *testing.T) {
 			`),
 			want: []string{"github.com/digitalocean/gocop/sample/failbuild"},
 		},
+		{
+			name: "finds build failed package w/underscore",
+			input: []byte(`
+				# github.com/digitalocean/gocop/sample/failbuild [github.com/digitalocean/gocop/sample/failbuild.test]
+				sample\failbuild\failbuild.go:3:1: syntax error: non-declaration statement outside function body
+				FAIL	github.com/digitalocean/gocop/sample/fail_build [build failed]
+				?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+				ok  	github.com/digitalocean/gocop/sample/pass	0.250s
+			`),
+			want: []string{"github.com/digitalocean/gocop/sample/fail_build"},
+		},
 	}
 
 	for _, tt := range tests {

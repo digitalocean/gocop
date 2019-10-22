@@ -10,7 +10,7 @@ const (
 	// ResultsPattern provides the REGEX pattern to find all package output
 	ResultsPattern = `((FAIL|ok|\?)\s+([A-Za-z\.\/]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\]))`
 	// FailurePattern provides the REGEX pattern to find failed packages in test output
-	FailurePattern = `FAIL\s+([A-Za-z\.\/]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])`
+	FailurePattern = `FAIL\s+([A-Za-z\.\/\_]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])`
 )
 
 // Parse iterates over test output for all packages
