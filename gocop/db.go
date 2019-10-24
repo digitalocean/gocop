@@ -15,17 +15,18 @@ import (
 
 // TestRun contains data about a test run
 type TestRun struct {
-	Created  time.Time
-	Repo     string
-	Branch   string
-	Sha      string
-	BuildID  int64
-	Config   string
-	Command  string
-	Short    bool
-	Race     bool
-	Tags     []string
-	Duration time.Duration
+	Created   time.Time
+	Repo      string
+	Branch    string
+	Sha       string
+	BuildID   int64
+	Config    string
+	Command   string
+	Benchmark bool
+	Short     bool
+	Race      bool
+	Tags      []string
+	Duration  time.Duration
 }
 
 // TestResult contains data about a test result
@@ -55,8 +56,8 @@ func ConnectDB(host, port, user, password, dbname, sslmode string) *sql.DB {
 // InsertRun inserts a new entry to the run table in the database
 func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 	sqlStr := `
-		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, short, race, tags)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
 	sort.Strings(run.Tags)
@@ -71,6 +72,7 @@ func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 		run.Branch,
 		run.Sha,
 		run.Command,
+		run.Benchmark,
 		run.Short,
 		run.Race,
 		tags,
@@ -81,7 +83,7 @@ func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 
 // GetRun retrieves information about a run
 func GetRun(db *sql.DB, buildID int64) *sql.Row {
-	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, race, short, tags
+	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, benchmark, race, short, tags
 		FROM run
 		WHERE build_id=$1`
 

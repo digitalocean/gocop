@@ -9,7 +9,7 @@ import (
 
 var host, port, dbName, user, password, sslMode, repo, branch, config, sha, start, runCommand string
 var buildID int64
-var short, race bool
+var bench, short, race bool
 var tags []string
 
 var testResults []gocop.TestResult
@@ -24,14 +24,15 @@ var storeCmd = &cobra.Command{
 		defer db.Close()
 
 		run := gocop.TestRun{
-			BuildID: buildID,
-			Repo:    repo,
-			Branch:  branch,
-			Sha:     sha,
-			Command: runCommand,
-			Short:   short,
-			Race:    race,
-			Tags:    tags,
+			BuildID:   buildID,
+			Repo:      repo,
+			Branch:    branch,
+			Sha:       sha,
+			Command:   runCommand,
+			Benchmark: bench,
+			Short:     short,
+			Race:      race,
+			Tags:      tags,
 		}
 		var err error
 		if len(start) != 0 {
@@ -106,6 +107,7 @@ func init() {
 	storeCmd.Flags().StringVarP(&sha, "sha", "z", "", "git sha of test run")
 	storeCmd.Flags().StringVarP(&start, "time", "m", "", "time of test run")
 	storeCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
+	storeCmd.Flags().BoolVar(&bench, "bench", false, "indicate if test ran benchmarks")
 	storeCmd.Flags().BoolVar(&short, "short", false, "indicate if test is run with -short flag")
 	storeCmd.Flags().BoolVar(&race, "race", false, "indicate if test is run with -race flag")
 	storeCmd.Flags().StringSliceVar(&tags, "tags", []string{}, "comma-separated tags enabled for the run")

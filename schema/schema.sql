@@ -12,6 +12,7 @@ CREATE TABLE run (
   sha       TEXT,
   build_id  BIGINT,
   cmd       TEXT,
+  benchmark BOOL,
   race      BOOL,
   short     BOOL,
   tags      TEXT,
@@ -25,7 +26,7 @@ CREATE OR REPLACE FUNCTION set_run_hash()
 RETURNS trigger AS
 $$
 BEGIN
-  NEW.hash := MD5(concat(NEW.race, NEW.short, NEW.tags));
+  NEW.hash := MD5(concat(NEW.benchmark, NEW.race, NEW.short, NEW.tags));
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -40,9 +41,9 @@ DROP TRIGGER IF EXISTS run_hash on run;
 CREATE TRIGGER run_hash
 BEFORE UPDATE ON run
 FOR EACH ROW
-WHEN ((OLD.race, OLD.short, OLD.tags)
+WHEN ((OLD.benchmark, OLD.race, OLD.short, OLD.tags)
   IS DISTINCT FROM
-  (NEW.race, NEW.short, NEW.tags))
+  (NEW.benchmark, NEW.race, NEW.short, NEW.tags))
 EXECUTE PROCEDURE set_run_hash();
 
 DROP TABLE IF EXISTS test;
