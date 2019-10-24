@@ -56,7 +56,7 @@ var storeCmd = &cobra.Command{
 					r = "skip"
 				}
 
-				test := gocop.TestResult{Name: entry[1], Result: r, Created: run.Created}
+				test := gocop.TestResult{Package: entry[1], Result: r, Created: run.Created}
 
 				if r != "skip" {
 					d, err := time.ParseDuration(entry[2])
@@ -73,15 +73,16 @@ var storeCmd = &cobra.Command{
 		if len(retests) > 0 {
 			pkgs := gocop.FlakyFile(retests...)
 			for _, entry := range pkgs {
-				testResults = append(testResults, gocop.TestResult{Name: entry, Result: "flaky"})
+				testResults = append(testResults, gocop.TestResult{Package: entry, Result: "flaky"})
 			}
 		}
 
-		id, err := gocop.InsertRun(db, run)
+		_, err = gocop.InsertRun(db, run)
 		if err != nil {
 			panic(err)
 		}
-		_, err = gocop.InsertTests(db, id, testResults)
+
+		_, err = gocop.InsertTests(db, run.Created, testResults)
 		if err != nil {
 			panic(err)
 		}
