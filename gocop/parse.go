@@ -8,9 +8,7 @@ import (
 
 const (
 	// ResultsPattern provides the REGEX pattern to find all package output
-	ResultsPattern = `((FAIL|ok|\?)\s+([A-Za-z\.\/]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\]))`
-	// FailurePattern provides the REGEX pattern to find failed packages in test output
-	FailurePattern = `FAIL\s+([A-Za-z\.\/\_]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])`
+	ResultsPattern = `((FAIL|ok|\?)\s+([A-Za-z\.\/\_]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\]))`
 )
 
 // Parse iterates over test output for all packages
@@ -35,12 +33,14 @@ func Parse(output []byte) [][]string {
 
 // ParseFailed iterates over test output for failed packages
 func ParseFailed(output []byte) []string {
-	re := regexp.MustCompile(FailurePattern)
+	re := regexp.MustCompile(ResultsPattern)
 	matches := re.FindAllSubmatch(output, -1)
 
 	packages := make([]string, 0)
 	for _, match := range matches {
-		packages = append(packages, string(match[1]))
+		if string(match[2]) == "FAIL" {
+			packages = append(packages, string(match[3]))
+		}
 	}
 
 	return packages
