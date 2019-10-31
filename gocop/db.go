@@ -111,7 +111,7 @@ func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.R
 	sqlStr = ReplaceSQL(sqlStr, "?")
 	stmt, err := db.Prepare(sqlStr)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return stmt.Exec(vals...)

@@ -1,7 +1,12 @@
 package main
 
-import "github.com/digitalocean/gocop/action"
+import (
+	"log"
+
+	"github.com/digitalocean/gocop/action"
+)
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	action.Execute()
 }

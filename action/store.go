@@ -75,7 +75,7 @@ var storeCmd = &cobra.Command{
 						log.Fatal(err)
 					}
 
-					test.Coverage = f
+					test.Coverage = f / 100
 				}
 
 				testResults = append(testResults, test)
