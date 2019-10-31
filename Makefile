@@ -3,6 +3,7 @@ export GOFLAGS
 
 build:
 	mkdir -p .build
+	rm -f .build/gocop-linux-amd64
 	go build -o .build/gocop-linux-amd64
 
 .phony: unit

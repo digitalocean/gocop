@@ -69,12 +69,14 @@ var storeCmd = &cobra.Command{
 					test.Duration = d
 				}
 
-				f, err := strconv.ParseFloat(entry[3], 64)
-				if err != nil {
-					log.Fatal(err)
-				}
+				if entry[3] != "" {
+					f, err := strconv.ParseFloat(entry[3], 64)
+					if err != nil {
+						log.Fatal(err)
+					}
 
-				test.Coverage = f
+					test.Coverage = f
+				}
 
 				testResults = append(testResults, test)
 			}
