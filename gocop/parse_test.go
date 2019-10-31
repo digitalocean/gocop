@@ -31,6 +31,8 @@ func TestParseFailed(t *testing.T) {
 				--- FAIL: TestMightFail (0.00s)
 					flaky_test.go:11: integer is factor of 3
 				FAIL
+				coverage: 76.4% of statements
+				ok  	github.com/digitalocean/gocop/sample/k8s	0.721s
 				FAIL	github.com/digitalocean/gocop/sample/flaky	0.488s coverage: 50.0% of statements
 				ok  	github.com/digitalocean/gocop/sample/pass	0.250s
 			`),
@@ -103,11 +105,11 @@ func TestParse(t *testing.T) {
 					flaky_test.go:16: integer is factor of 3
 				FAIL
 				FAIL	do/teams/cicd/flaky	1.685s
-				ok  	do/teams/cicd/pass	1.129s
+				ok  	do/teams/cicd/pass	1.129s coverage: 50.0% of statements
 			`),
-			want: [][]string{{"FAIL", "do/teams/cicd/fail", "0.600s"},
-				{"FAIL", "do/teams/cicd/flaky", "1.685s"},
-				{"ok", "do/teams/cicd/pass", "1.129s"},
+			want: [][]string{{"FAIL", "do/teams/cicd/fail", "0.600s", ""},
+				{"FAIL", "do/teams/cicd/flaky", "1.685s", ""},
+				{"ok", "do/teams/cicd/pass", "1.129s", "50.0"},
 			},
 		},
 	}

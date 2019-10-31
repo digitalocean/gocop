@@ -35,6 +35,7 @@ type TestResult struct {
 	Package  string
 	Result   string
 	Duration time.Duration
+	Coverage float64
 }
 
 // ConnectDB connects to the database
@@ -92,12 +93,12 @@ func GetRun(db *sql.DB, buildID int64) *sql.Row {
 
 // InsertTests adds test results to database
 func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.Result, error) {
-	sqlStr := "INSERT INTO test(created, package, result, duration) VALUES "
+	sqlStr := "INSERT INTO test(created, package, result, duration, coverage) VALUES "
 	vals := []interface{}{}
 
 	for _, row := range testResults {
-		sqlStr += "(?, ?, ?, ?),"
-		vals = append(vals, row.Created, row.Package, row.Result, row.Duration/time.Millisecond)
+		sqlStr += "(?, ?, ?, ?, ?),"
+		vals = append(vals, row.Created, row.Package, row.Result, row.Duration/time.Millisecond, row.Coverage)
 	}
 	if len(vals) == 0 {
 		return nil, errors.New("No test results found")
@@ -117,13 +118,14 @@ func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.R
 }
 
 // GetTests retrieves test results for a build
-// CURRENTLY BROKEN
-func GetTests(db *sql.DB, buildID int64) (*sql.Rows, error) {
-	sqlStr := `SELECT id, run_id, result, name, duration, created
+func GetTests(db *sql.DB, created time.Time) (*sql.Rows, error) {
+	sqlStr := `
+		SELECT created, package, result, duration, coverage
 		FROM test
-		WHERE run_id=$1`
+		WHERE created=$1
+	`
 
-	return db.Query(sqlStr, buildID)
+	return db.Query(sqlStr, created)
 }
 
 // ReplaceSQL replaces the instance occurrence of any string pattern with an increasing $n based sequence

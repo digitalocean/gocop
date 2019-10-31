@@ -1,6 +1,8 @@
 package action
 
 import (
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/digitalocean/gocop/gocop"
@@ -38,7 +40,7 @@ var storeCmd = &cobra.Command{
 		if len(start) != 0 {
 			run.Created, err = time.Parse(time.RFC3339, start)
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 		} else {
 			run.Created = time.Now().UTC()
@@ -62,10 +64,17 @@ var storeCmd = &cobra.Command{
 				if r != "skip" {
 					d, err := time.ParseDuration(entry[2])
 					if err != nil {
-						panic(err)
+						log.Fatal(err)
 					}
 					test.Duration = d
 				}
+
+				f, err := strconv.ParseFloat(entry[3], 64)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				test.Coverage = f
 
 				testResults = append(testResults, test)
 			}
@@ -80,12 +89,12 @@ var storeCmd = &cobra.Command{
 
 		_, err = gocop.InsertRun(db, run)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		_, err = gocop.InsertTests(db, run.Created, testResults)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	},
 }

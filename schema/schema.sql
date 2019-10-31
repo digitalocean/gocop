@@ -51,7 +51,8 @@ CREATE TABLE test (
   created   TIMESTAMPTZ,
   package   TEXT,
   result    TEXT CHECK (result in ('pass', 'fail', 'flaky', 'skip')),
-  duration  INTEGER
+  duration  INTEGER,
+  coverage  NUMERIC(4,3)
 );
 
 SELECT create_hypertable('test', 'created');

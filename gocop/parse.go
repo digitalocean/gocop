@@ -8,7 +8,7 @@ import (
 
 const (
 	// ResultsPattern provides the REGEX pattern to find all package output
-	ResultsPattern = `((FAIL|ok|\?)\s+(\S+)\s+([0-9s\.]+|\[build failed\]|\[no test files\]))`
+	ResultsPattern = `((FAIL|ok|\?)\s+([\w\.\/]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])(\n|\s+coverage\:\s+([\d\.]+)\%\s+))`
 )
 
 // Parse iterates over test output for all packages
@@ -19,12 +19,14 @@ func Parse(output []byte) [][]string {
 	packages := make([][]string, 0)
 	for _, match := range matches {
 		results := make([]string, 0)
-		// outcome
+		// outcome [0]
 		results = append(results, match[2])
-		// package
+		// package [1]
 		results = append(results, match[3])
-		// duration
+		// duration [2]
 		results = append(results, match[4])
+		// coverage [3]
+		results = append(results, match[6])
 		packages = append(packages, results)
 	}
 
