@@ -31,7 +31,7 @@ func TestParseFailed(t *testing.T) {
 				--- FAIL: TestMightFail (0.00s)
 					flaky_test.go:11: integer is factor of 3
 				FAIL
-				FAIL	github.com/digitalocean/gocop/sample/flaky	0.488s
+				FAIL	github.com/digitalocean/gocop/sample/flaky	0.488s coverage: 50.0% of statements
 				ok  	github.com/digitalocean/gocop/sample/pass	0.250s
 			`),
 			want: []string{"github.com/digitalocean/gocop/sample/fail", "github.com/digitalocean/gocop/sample/flaky"},
@@ -57,6 +57,17 @@ func TestParseFailed(t *testing.T) {
 				ok  	github.com/digitalocean/gocop/sample/pass	0.250s
 			`),
 			want: []string{"github.com/digitalocean/gocop/sample/fail_build"},
+		},
+		{
+			name: "finds build failed package w/0-9",
+			input: []byte(`
+				# github.com/digitalocean/gocop/sample/failbuild [github.com/digitalocean/gocop/sample/failbuild.test]
+				sample\failbuild\failbuild.go:3:1: syntax error: non-declaration statement outside function body
+				FAIL	github.com/digitalocean/gocop/sample/k8s [build failed]
+				?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+				ok  	github.com/digitalocean/gocop/sample/pass	0.250s coverage: 50.0% of statements
+			`),
+			want: []string{"github.com/digitalocean/gocop/sample/k8s"},
 		},
 	}
 
