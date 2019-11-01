@@ -8,7 +8,7 @@ import (
 
 const (
 	// ResultsPattern provides the REGEX pattern to find all package output
-	ResultsPattern = `((FAIL|ok|\?)\s+([\w\.\/]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])(\n|\s+coverage\:\s+([\d\.]+)\%\s+))`
+	ResultsPattern = `((FAIL|ok|\?)\s+([\w\.\/\-]+)\s+([0-9s\.]+|\[build failed\]|\[no test files\])(\n|\s+coverage\:\s+([\d\.]+)\%\s+))`
 )
 
 // Parse iterates over test output for all packages

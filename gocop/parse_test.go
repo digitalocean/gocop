@@ -71,6 +71,17 @@ func TestParseFailed(t *testing.T) {
 			`),
 			want: []string{"github.com/digitalocean/gocop/sample/k8s"},
 		},
+		{
+			name: "finds build failed package w/hyphen",
+			input: []byte(`
+				# github.com/digitalocean/gocop/sample/failbuild [github.com/digitalocean/gocop/sample/failbuild.test]
+				sample\failbuild\failbuild.go:3:1: syntax error: non-declaration statement outside function body
+				FAIL	github.com/digital-ocean/gocop/sample/hyphen [build failed]
+				?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+				ok  	github.com/digitalocean/gocop/sample/pass	0.250s coverage: 50.0% of statements
+			`),
+			want: []string{"github.com/digital-ocean/gocop/sample/hyphen"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -100,16 +111,16 @@ func TestParse(t *testing.T) {
 				--- FAIL: TestWillFail (0.00s)
 					failing_test.go:16: number does equal eleven
 				FAIL
-				FAIL	do/teams/cicd/fail	0.600s
+				FAIL	github.com/digitalocean/gocop/sample/fail	0.600s
 				--- FAIL: TestMightFail (0.00s)
 					flaky_test.go:16: integer is factor of 3
 				FAIL
-				FAIL	do/teams/cicd/flaky	1.685s
-				ok  	do/teams/cicd/pass	1.129s coverage: 50.0% of statements
+				FAIL	github.com/digitalocean/gocop/sample/flaky	1.685s
+				ok  	github.com/digitalocean/gocop/sample/pass	1.129s coverage: 50.0% of statements
 			`),
-			want: [][]string{{"FAIL", "do/teams/cicd/fail", "0.600s", ""},
-				{"FAIL", "do/teams/cicd/flaky", "1.685s", ""},
-				{"ok", "do/teams/cicd/pass", "1.129s", "50.0"},
+			want: [][]string{{"FAIL", "github.com/digitalocean/gocop/sample/fail", "0.600s", ""},
+				{"FAIL", "github.com/digitalocean/gocop/sample/flaky", "1.685s", ""},
+				{"ok", "github.com/digitalocean/gocop/sample/pass", "1.129s", "50.0"},
 			},
 		},
 	}
