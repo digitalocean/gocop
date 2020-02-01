@@ -101,7 +101,7 @@ func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.R
 		vals = append(vals, row.Created, row.Package, row.Result, row.Duration/time.Millisecond, row.Coverage)
 	}
 	if len(vals) == 0 {
-		return nil, errors.New("No test results found")
+		return nil, errors.New("no test results found")
 	}
 
 	// trim the last ,

@@ -1,3 +1,5 @@
+// +build sample
+
 package flaky
 
 import (

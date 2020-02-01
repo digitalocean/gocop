@@ -7,7 +7,7 @@ import (
 
 // Flaky reviews test output from multiple attempts and identifies potentially flaky packages
 func Flaky(runs ...[]byte) []string {
-	failCount := make(map[string]int, 0)
+	failCount := make(map[string]int)
 	runCount := len(runs)
 	flaky := make([]string, 0)
 

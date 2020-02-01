@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var host, port, dbName, user, password, sslMode, repo, branch, config, sha, start, runCommand string
+var host, port, dbName, user, password, sslMode, repo, branch, sha, start, runCommand string
 var buildID int64
 var bench, short, race bool
 var tags []string
@@ -21,9 +21,15 @@ var storeCmd = &cobra.Command{
 	Short: "stores test results to database",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		var err error
 
 		db := gocop.ConnectDB(host, port, user, password, dbName, sslMode)
-		defer db.Close()
+		defer func() {
+			err = db.Close()
+			if err != nil {
+				log.Fatalln(err)
+			}
+		}()
 
 		run := gocop.TestRun{
 			BuildID:   buildID,
@@ -36,7 +42,6 @@ var storeCmd = &cobra.Command{
 			Race:      race,
 			Tags:      tags,
 		}
-		var err error
 		if len(start) != 0 {
 			run.Created, err = time.Parse(time.RFC3339, start)
 			if err != nil {
@@ -108,12 +113,20 @@ func init() {
 	storeCmd.Flags().StringVarP(&dbName, "database", "x", "postgres", "database name")
 	storeCmd.Flags().StringVarP(&sslMode, "ssl", "y", "require", "database ssl mode")
 	storeCmd.Flags().StringVarP(&password, "pass", "p", "", "database password")
-	storeCmd.MarkFlagRequired("pass")
+	err := storeCmd.MarkFlagRequired("pass")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	storeCmd.Flags().StringVarP(&user, "user", "u", "postgres", "database username")
 	storeCmd.Flags().StringVarP(&repo, "repo", "g", "", "repository name")
 	storeCmd.Flags().StringVarP(&branch, "branch", "b", "master", "branch name")
-	storeCmd.Flags().Int64VarP(&buildID, "bld-id", "i", 0, "build id")
-	storeCmd.MarkFlagRequired("build-id")
+	storeCmd.Flags().Int64VarP(&buildID, "build-id", "i", 0, "build id")
+	err = storeCmd.MarkFlagRequired("build-id")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	storeCmd.Flags().StringVarP(&runCommand, "cmd", "c", "", "test execution command")
 	storeCmd.Flags().StringVarP(&sha, "sha", "z", "", "git sha of test run")
 	storeCmd.Flags().StringVarP(&start, "time", "m", "", "time of test run")
