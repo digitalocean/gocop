@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/digitalocean/gocop/gocop"
@@ -24,5 +25,8 @@ func init() {
 	RootCmd.AddCommand(flakyCmd)
 
 	flakyCmd.Flags().StringSliceVarP(&retests, "retests", "r", []string{}, "source output for retests")
-	flakyCmd.MarkFlagRequired("retests")
+	err := flakyCmd.MarkFlagRequired("retests")
+	if err != nil {
+		log.Fatal(err)
+	}
 }

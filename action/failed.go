@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/digitalocean/gocop/gocop"
@@ -24,5 +25,8 @@ func init() {
 	RootCmd.AddCommand(failedCmd)
 
 	failedCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
-	failedCmd.MarkFlagRequired("src")
+	err := failedCmd.MarkFlagRequired("src")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
