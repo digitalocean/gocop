@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var host, port, dbName, user, password, sslMode, repo, branch, config, sha, start, runCommand string
+var host, port, dbName, user, password, sslMode, repo, branch, sha, start, runCommand string
 var buildID int64
 var bench, short, race bool
 var tags []string
