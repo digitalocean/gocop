@@ -16,7 +16,7 @@ component:
 
 .phony: gen-samples
 gen-samples:
-	go test -count=1 github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run0.txt
-	go test -count=1 github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run1.txt
-	go test -count=1 github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run2.txt
-	go test -count=1 github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run3.txt
+	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run0.txt
+	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run1.txt
+	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run2.txt
+	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run3.txt
