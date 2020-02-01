@@ -28,13 +28,13 @@ func TestFailedPackages(t *testing.T) {
 			name:   "finds multiple failed packages",
 			action: "failed",
 			input:  "gocop/testdata/run0.txt",
-			want:   "github.com/digitalocean/gocop/sample/fail\ngithub.com/digitalocean/gocop/sample/flaky",
+			want:   "github.com/digitalocean/gocop/sample/fail\ngithub.com/digitalocean/gocop/sample/failbuild\ngithub.com/digitalocean/gocop/sample/flaky",
 		},
 		{
 			name:   "finds single failed packages",
 			action: "failed",
 			input:  "gocop/testdata/run1.txt",
-			want:   "github.com/digitalocean/gocop/sample/fail",
+			want:   "github.com/digitalocean/gocop/sample/fail\ngithub.com/digitalocean/gocop/sample/failbuild",
 		},
 	}
 

@@ -121,7 +121,7 @@ func init() {
 	storeCmd.Flags().StringVarP(&user, "user", "u", "postgres", "database username")
 	storeCmd.Flags().StringVarP(&repo, "repo", "g", "", "repository name")
 	storeCmd.Flags().StringVarP(&branch, "branch", "b", "master", "branch name")
-	storeCmd.Flags().Int64VarP(&buildID, "bld-id", "i", 0, "build id")
+	storeCmd.Flags().Int64VarP(&buildID, "build-id", "i", 0, "build id")
 	err = storeCmd.MarkFlagRequired("build-id")
 	if err != nil {
 		log.Fatal(err)
