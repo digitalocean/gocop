@@ -1,10 +1,17 @@
-# github.com/digitalocean/gocop/sample/failbuild [github.com/digitalocean/gocop/sample/failbuild.test]
-sample\failbuild\failbuild.go:3:1: syntax error: non-declaration statement outside function body
+# cover github.com/digitalocean/gocop/sample/failbuild
+2020/05/12 14:18:13 cover: C:\Users\Chris\dev\code\do\gocop\sample\failbuild\broken.go: C:\Users\Chris\dev\code\do\gocop\sample\failbuild\broken.go:5:1: expected declaration, found fun
 --- FAIL: TestWillFail (0.00s)
     failing_test.go:11: number does equal eleven
 FAIL
-FAIL	github.com/digitalocean/gocop/sample/fail	0.251s
+coverage: 100.0% of statements
+FAIL	github.com/digitalocean/gocop/sample/fail	0.023s
 FAIL	github.com/digitalocean/gocop/sample/failbuild [build failed]
-ok  	github.com/digitalocean/gocop/sample/flaky	0.492s
+--- FAIL: TestMightFail (0.00s)
+    flaky_test.go:13: integer is factor of 3
+FAIL
+coverage: [no statements]
+FAIL	github.com/digitalocean/gocop/sample/flaky	0.024s
 ?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
-ok  	github.com/digitalocean/gocop/sample/pass	0.731s
+ok  	github.com/digitalocean/gocop/sample/pass	0.019s	coverage: 100.0% of statements
+ok  	github.com/digitalocean/gocop/sample/pass/nostatements	0.020s	coverage: [no statements]
+FAIL

@@ -14,9 +14,9 @@ unit:
 component:
 	go test github.com/digitalocean/gocop
 
-.phony: gen-samples
-gen-samples:
-	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run0.txt
-	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run1.txt
-	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run2.txt
-	go test -count=1 -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run3.txt
+.phony: gen-testdata
+gen-testdata:
+	go test -count=1 -cover -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run0.txt
+	go test -count=1 -cover -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run1.txt
+	go test -count=1 -cover -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run2.txt
+	go test -count=1 -cover -tags="sample" github.com/digitalocean/gocop/sample/... 2>&1 | tee gocop/testdata/run3.txt

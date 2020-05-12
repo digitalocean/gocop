@@ -27,6 +27,7 @@ type TestRun struct {
 	Race      bool
 	Tags      []string
 	Duration  time.Duration
+	Results   []TestResult
 }
 
 // TestResult contains data about a test result
@@ -36,6 +37,104 @@ type TestResult struct {
 	Result   string
 	Duration time.Duration
 	Coverage float64
+}
+
+func (t *TestResult) setResult(v string) {
+	switch v {
+	case "ok":
+		t.Result = "pass"
+	case "FAIL":
+		t.Result = "fail"
+	case "?":
+		t.Result = "skip"
+	}
+}
+
+func (t *TestResult) setDuration(v string) error {
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	t.Duration = d
+
+	return nil
+}
+
+func (t *TestResult) setCoverage(v string) error {
+	if v != "" && v != "[no statements]" {
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		t.Coverage = f / 100
+	}
+
+	return nil
+}
+
+// ConvertResults is a helper for adding test results to a run from parsed output
+func (run *TestRun) ConvertResults(pkgs [][]string) error {
+	for _, entry := range pkgs {
+		test := TestResult{Package: entry[1], Created: run.Created}
+		test.setResult(entry[0])
+
+		if r != "skip" {
+			d, err := time.ParseDuration(entry[2])
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			test.Duration = d
+		}
+
+		if entry[3] != "" {
+			f, err := strconv.ParseFloat(entry[3], 64)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			test.Coverage = f / 100
+		}
+
+		run.AddResult(test)
+	}
+
+	return nil
+}
+
+// NewTestResult is a helper for creating a test result from parsed output
+func NewTestResult(created time.Time, pkg []string) (TestResult, error) {
+	test := TestResult{Package: pkg[1], Created: created}
+	test.setResult(pkg[0])
+
+	if pkg[2] == "[build failed]" || test.Result == "skip" {
+		return test, nil
+	}
+
+	err := test.setDuration(pkg[2])
+	if err != nil {
+		return test, err
+	}
+
+	if pkg[3] == "" || pkg[3] == "[no statements]" {
+		return test, nil
+	}
+
+	err = test.setCoverage(pkg[3])
+	if err != nil {
+		return test, err
+	}
+
+	return test, nil
+}
+
+// AddResult is a helper for adding a test result to a run
+func (run *TestRun) AddResult(r TestResult) {
+	run.Results = append(run.Results, r)
 }
 
 // ConnectDB connects to the database
@@ -57,9 +156,9 @@ func ConnectDB(host, port, user, password, dbname, sslmode string) *sql.DB {
 // InsertRun inserts a new entry to the run table in the database
 func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 	sqlStr := `
-		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-	`
+    INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  `
 
 	sort.Strings(run.Tags)
 	tags := strings.Join(run.Tags, " ")
@@ -85,8 +184,8 @@ func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 // GetRun retrieves information about a run
 func GetRun(db *sql.DB, buildID int64) *sql.Row {
 	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, benchmark, race, short, tags
-		FROM run
-		WHERE build_id=$1`
+    FROM run
+    WHERE build_id=$1`
 
 	return db.QueryRow(sqlStr, buildID)
 }
@@ -120,10 +219,10 @@ func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.R
 // GetTests retrieves test results for a build
 func GetTests(db *sql.DB, created time.Time) (*sql.Rows, error) {
 	sqlStr := `
-		SELECT created, package, result, duration, coverage
-		FROM test
-		WHERE created=$1
-	`
+    SELECT created, package, result, duration, coverage
+    FROM test
+    WHERE created=$1
+  `
 
 	return db.Query(sqlStr, created)
 }
