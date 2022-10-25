@@ -1,10 +1,17 @@
 package gocop
 
-import "time"
+import (
+	"time"
+
+	"github.com/gofrs/uuid"
+)
 
 // TestRun contains data about a test run
 type TestRun struct {
+	ID        uuid.UUID
 	Created   time.Time
+	Team      string
+	JobName   string
 	Repo      string
 	Branch    string
 	Sha       string
@@ -20,8 +27,10 @@ type TestRun struct {
 
 // TestResult contains data about a test result
 type TestResult struct {
+	RunID    uuid.UUID
 	Created  time.Time
 	Package  string
+	Test     string
 	Result   string
 	Duration time.Duration
 	Coverage float64
