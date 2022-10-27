@@ -9,14 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var src string
+type failedCmdFlags struct {
+	src string
+}
+
+var failedFlags failedCmdFlags
 
 var failedCmd = &cobra.Command{
 	Use:   "failed",
 	Short: "lists failed packages from test run",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		pkgs := gocop.ParseFileFailed(src)
+		pkgs := gocop.ParseFileFailed(failedFlags.src)
 		fmt.Print(strings.Join(pkgs, "\n"))
 	},
 }
@@ -24,7 +28,7 @@ var failedCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(failedCmd)
 
-	failedCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
+	failedCmd.Flags().StringVarP(&failedFlags.src, "src", "s", "", "source test output file")
 	err := failedCmd.MarkFlagRequired("src")
 	if err != nil {
 		log.Fatal(err)
