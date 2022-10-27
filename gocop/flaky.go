@@ -1,8 +1,8 @@
 package gocop
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 // Flaky reviews test output from multiple attempts and identifies potentially flaky packages
@@ -35,7 +35,7 @@ func Flaky(runs ...[]byte) []string {
 func FlakyFile(files ...string) []string {
 	runs := make([][]byte, 0)
 	for _, file := range files {
-		run, err := ioutil.ReadFile(file)
+		run, err := os.ReadFile(file)
 		if err != nil {
 			log.Fatal(err)
 		}
