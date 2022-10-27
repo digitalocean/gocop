@@ -13,31 +13,6 @@ import (
 	_ "github.com/lib/pq" // import postgres driver
 )
 
-// TestRun contains data about a test run
-type TestRun struct {
-	Created   time.Time
-	Repo      string
-	Branch    string
-	Sha       string
-	BuildID   int64
-	Config    string
-	Command   string
-	Benchmark bool
-	Short     bool
-	Race      bool
-	Tags      []string
-	Duration  time.Duration
-}
-
-// TestResult contains data about a test result
-type TestResult struct {
-	Created  time.Time
-	Package  string
-	Result   string
-	Duration time.Duration
-	Coverage float64
-}
-
 // ConnectDB connects to the database
 func ConnectDB(host, port, user, password, dbname, sslmode string) *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+

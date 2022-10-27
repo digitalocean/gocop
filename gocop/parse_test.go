@@ -2,6 +2,7 @@ package gocop
 
 import (
 	"testing"
+	"time"
 
 	"github.com/poy/onpar"
 	"github.com/poy/onpar/expect"
@@ -86,7 +87,8 @@ func TestParseFailed(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := ParseFailedPackages(tt.input)
+			got, err := ParseFailedPackages(tt.input)
+			expect(err).To(matchers.BeNil())
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
@@ -103,7 +105,7 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name  string
 		input []byte
-		want  [][]string
+		want  []TestResult
 	}{
 		{
 			name: "finds multiple failed packages",
@@ -118,16 +120,34 @@ func TestParse(t *testing.T) {
 				FAIL	github.com/digitalocean/gocop/sample/flaky	1.685s
 				ok  	github.com/digitalocean/gocop/sample/pass	1.129s coverage: 50.0% of statements
 			`),
-			want: [][]string{{"FAIL", "github.com/digitalocean/gocop/sample/fail", "0.600s", ""},
-				{"FAIL", "github.com/digitalocean/gocop/sample/flaky", "1.685s", ""},
-				{"ok", "github.com/digitalocean/gocop/sample/pass", "1.129s", "50.0"},
+			want: []TestResult{
+				// {"FAIL", "github.com/digitalocean/gocop/sample/fail", "0.600s", ""},
+				{
+					Result:   "fail",
+					Package:  "github.com/digitalocean/gocop/sample/fail",
+					Duration: time.Millisecond * 600,
+				},
+				// {"FAIL", "github.com/digitalocean/gocop/sample/flaky", "1.685s", ""},
+				{
+					Result:   "fail",
+					Package:  "github.com/digitalocean/gocop/sample/flaky",
+					Duration: time.Millisecond * 1685,
+				},
+				// {"ok", "github.com/digitalocean/gocop/sample/pass", "1.129s", "50.0"},
+				{
+					Result:   "pass",
+					Package:  "github.com/digitalocean/gocop/sample/pass",
+					Duration: time.Millisecond * 1129,
+					Coverage: 0.5,
+				},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := Parse(tt.input)
+			got, err := Parse(tt.input)
+			expect(err).To(matchers.BeNil())
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}

@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strconv"
+	"time"
 )
 
 const (
@@ -12,44 +14,66 @@ const (
 )
 
 // Parse iterates over test output for all packages
-func Parse(output []byte) [][]string {
+func Parse(output []byte) ([]TestResult, error) {
+	var results []TestResult
+
 	re := regexp.MustCompile(ResultsPattern)
 	matches := re.FindAllStringSubmatch(string(output), -1)
 
-	packages := make([][]string, 0)
 	for _, match := range matches {
-		results := make([]string, 0)
-		// outcome [0]
-		results = append(results, match[2])
-		// package [1]
-		results = append(results, match[3])
-		// duration [2]
-		results = append(results, match[4])
-		// coverage [3]
-		results = append(results, match[6])
-		packages = append(packages, results)
+		event := TestResult{
+			Package: match[3],
+		}
+
+		// result
+		switch match[2] {
+		case "ok":
+			event.Result = "pass"
+		case "FAIL":
+			event.Result = "fail"
+		case "?":
+			event.Result = "skip"
+		}
+
+		// duration
+		if event.Result != "skip" {
+			// best effort, ignoring error
+			d, _ := time.ParseDuration(match[4])
+			event.Duration = d
+		}
+
+		// coverage
+		if match[6] != "" {
+			// best effort, ignoring error
+			f, _ := strconv.ParseFloat(match[6], 64)
+			event.Coverage = f / 100
+		}
+
+		results = append(results, event)
 	}
 
-	return packages
+	return results, nil
 }
 
 // ParseFailedPackages iterates over test output for failed packages
-func ParseFailedPackages(output []byte) []string {
-	re := regexp.MustCompile(ResultsPattern)
-	matches := re.FindAllSubmatch(output, -1)
+func ParseFailedPackages(output []byte) ([]string, error) {
+	tests, err := Parse(output)
+	if err != nil {
+		return nil, err
+	}
 
-	packages := make([]string, 0)
-	for _, match := range matches {
-		if string(match[2]) == "FAIL" {
-			packages = append(packages, string(match[3]))
+	var packages []string
+	for _, t := range tests {
+		if t.Result == "fail" {
+			packages = append(packages, t.Package)
 		}
 	}
 
-	return packages
+	return packages, nil
 }
 
 // ParseFileFailedPackages reads a file to Parse() failed packages
-func ParseFileFailedPackages(path string) []string {
+func ParseFileFailedPackages(path string) ([]string, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +83,7 @@ func ParseFileFailedPackages(path string) []string {
 }
 
 // ParseFile reads a file to Parse() results
-func ParseFile(path string) [][]string {
+func ParseFile(path string) ([]TestResult, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
