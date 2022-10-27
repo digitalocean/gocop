@@ -2,7 +2,6 @@ package action
 
 import (
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/digitalocean/gocop/gocop"
@@ -74,43 +73,22 @@ var storeCmd = &cobra.Command{
 		}
 
 		if len(storeFlags.src) > 0 {
-			pkgs := gocop.ParseFile(storeFlags.src)
-			for _, entry := range pkgs {
-				var r string
-				switch entry[0] {
-				case "ok":
-					r = "pass"
-				case "FAIL":
-					r = "fail"
-				case "?":
-					r = "skip"
-				}
+			tests, err := gocop.ParseFile(storeFlags.src)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-				test := gocop.TestResult{Package: entry[1], Result: r, Created: run.Created}
-
-				if r != "skip" {
-					d, err := time.ParseDuration(entry[2])
-					if err != nil {
-						log.Fatal(err)
-					}
-					test.Duration = d
-				}
-
-				if entry[3] != "" {
-					f, err := strconv.ParseFloat(entry[3], 64)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					test.Coverage = f / 100
-				}
-
+			for _, test := range tests {
+				test.Created = run.Created
 				testResults = append(testResults, test)
 			}
 		}
 
 		if len(storeFlags.retests) > 0 {
-			pkgs := gocop.FlakyFilePackages(storeFlags.retests...)
+			pkgs, err := gocop.FlakyFilePackages(storeFlags.retests...)
+			if err != nil {
+				log.Fatal(err)
+			}
 			for _, entry := range pkgs {
 				testResults = append(testResults, gocop.TestResult{Package: entry, Result: "flaky"})
 			}

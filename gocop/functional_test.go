@@ -36,7 +36,8 @@ func TestParseFileFailedPackages(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := gocop.ParseFileFailedPackages(tt.input)
+			got, err := gocop.ParseFileFailedPackages(tt.input)
+			expect(err).To(matchers.BeNil())
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
@@ -69,7 +70,8 @@ func TestFlakyFilePackages(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := gocop.FlakyFilePackages(tt.input...)
+			got, err := gocop.FlakyFilePackages(tt.input...)
+			expect(err).To(matchers.BeNil())
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
