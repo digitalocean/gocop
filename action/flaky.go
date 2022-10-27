@@ -20,7 +20,7 @@ var flakyCmd = &cobra.Command{
 	Short: "lists packages suspected of having flaky tests",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		pkgs := gocop.FlakyFile(flakyFlags.retests...)
+		pkgs := gocop.FlakyFilePackages(flakyFlags.retests...)
 		fmt.Print(strings.Join(pkgs, "\n"))
 	},
 }

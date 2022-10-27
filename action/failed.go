@@ -20,7 +20,7 @@ var failedCmd = &cobra.Command{
 	Short: "lists failed packages from test run",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		pkgs := gocop.ParseFileFailed(failedFlags.src)
+		pkgs := gocop.ParseFileFailedPackages(failedFlags.src)
 		fmt.Print(strings.Join(pkgs, "\n"))
 	},
 }

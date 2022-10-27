@@ -86,7 +86,7 @@ func TestParseFailed(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := ParseFailed(tt.input)
+			got := ParseFailedPackages(tt.input)
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
