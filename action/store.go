@@ -9,10 +9,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var host, port, dbName, user, password, sslMode, repo, branch, sha, start, runCommand string
-var buildID int64
-var bench, short, race bool
-var tags []string
+type storeCmdFlags struct {
+	host       string
+	port       string
+	dbName     string
+	user       string
+	password   string
+	sslMode    string
+	repo       string
+	branch     string
+	sha        string
+	start      string
+	runCommand string
+	src        string
+	buildID    int64
+	bench      bool
+	short      bool
+	race       bool
+	tags       []string
+	retests    []string
+}
+
+var storeFlags storeCmdFlags
 
 var testResults []gocop.TestResult
 
@@ -23,7 +41,11 @@ var storeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var err error
 
-		db := gocop.ConnectDB(host, port, user, password, dbName, sslMode)
+		db := gocop.ConnectDB(
+			storeFlags.host, storeFlags.port,
+			storeFlags.user, storeFlags.password,
+			storeFlags.dbName, storeFlags.sslMode,
+		)
 		defer func() {
 			err = db.Close()
 			if err != nil {
@@ -32,18 +54,18 @@ var storeCmd = &cobra.Command{
 		}()
 
 		run := gocop.TestRun{
-			BuildID:   buildID,
-			Repo:      repo,
-			Branch:    branch,
-			Sha:       sha,
-			Command:   runCommand,
-			Benchmark: bench,
-			Short:     short,
-			Race:      race,
-			Tags:      tags,
+			BuildID:   storeFlags.buildID,
+			Repo:      storeFlags.repo,
+			Branch:    storeFlags.branch,
+			Sha:       storeFlags.sha,
+			Command:   storeFlags.runCommand,
+			Benchmark: storeFlags.bench,
+			Short:     storeFlags.short,
+			Race:      storeFlags.race,
+			Tags:      storeFlags.tags,
 		}
-		if len(start) != 0 {
-			run.Created, err = time.Parse(time.RFC3339, start)
+		if len(storeFlags.start) != 0 {
+			run.Created, err = time.Parse(time.RFC3339, storeFlags.start)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -51,8 +73,8 @@ var storeCmd = &cobra.Command{
 			run.Created = time.Now().UTC()
 		}
 
-		if len(src) > 0 {
-			pkgs := gocop.ParseFile(src)
+		if len(storeFlags.src) > 0 {
+			pkgs := gocop.ParseFile(storeFlags.src)
 			for _, entry := range pkgs {
 				var r string
 				switch entry[0] {
@@ -87,8 +109,8 @@ var storeCmd = &cobra.Command{
 			}
 		}
 
-		if len(retests) > 0 {
-			pkgs := gocop.FlakyFile(retests...)
+		if len(storeFlags.retests) > 0 {
+			pkgs := gocop.FlakyFile(storeFlags.retests...)
 			for _, entry := range pkgs {
 				testResults = append(testResults, gocop.TestResult{Package: entry, Result: "flaky"})
 			}
@@ -108,34 +130,34 @@ var storeCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(storeCmd)
-	storeCmd.Flags().StringVarP(&host, "host", "a", "localhost", "database host")
-	storeCmd.Flags().StringVarP(&port, "port", "t", "5432", "database port")
-	storeCmd.Flags().StringVarP(&dbName, "database", "x", "postgres", "database name")
-	storeCmd.Flags().StringVarP(&sslMode, "ssl", "y", "require", "database ssl mode")
-	storeCmd.Flags().StringVarP(&password, "pass", "p", "", "database password")
+	storeCmd.Flags().StringVarP(&storeFlags.host, "host", "a", "localhost", "database host")
+	storeCmd.Flags().StringVarP(&storeFlags.port, "port", "t", "5432", "database port")
+	storeCmd.Flags().StringVarP(&storeFlags.dbName, "database", "x", "postgres", "database name")
+	storeCmd.Flags().StringVarP(&storeFlags.sslMode, "ssl", "y", "require", "database ssl mode")
+	storeCmd.Flags().StringVarP(&storeFlags.password, "pass", "p", "", "database password")
 	err := storeCmd.MarkFlagRequired("pass")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	storeCmd.Flags().StringVarP(&user, "user", "u", "postgres", "database username")
-	storeCmd.Flags().StringVarP(&repo, "repo", "g", "", "repository name")
-	storeCmd.Flags().StringVarP(&branch, "branch", "b", "master", "branch name")
-	storeCmd.Flags().Int64VarP(&buildID, "build-id", "i", 0, "build id")
+	storeCmd.Flags().StringVarP(&storeFlags.user, "user", "u", "postgres", "database username")
+	storeCmd.Flags().StringVarP(&storeFlags.repo, "repo", "g", "", "repository name")
+	storeCmd.Flags().StringVarP(&storeFlags.branch, "branch", "b", "master", "branch name")
+	storeCmd.Flags().Int64VarP(&storeFlags.buildID, "build-id", "i", 0, "build id")
 	err = storeCmd.MarkFlagRequired("build-id")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	storeCmd.Flags().StringVarP(&runCommand, "cmd", "c", "", "test execution command")
-	storeCmd.Flags().StringVarP(&sha, "sha", "z", "", "git sha of test run")
-	storeCmd.Flags().StringVarP(&start, "time", "m", "", "time of test run")
-	storeCmd.Flags().StringVarP(&src, "src", "s", "", "source test output file")
-	storeCmd.Flags().BoolVar(&bench, "bench", false, "indicate if test ran benchmarks")
-	storeCmd.Flags().BoolVar(&short, "short", false, "indicate if test is run with -short flag")
-	storeCmd.Flags().BoolVar(&race, "race", false, "indicate if test is run with -race flag")
-	storeCmd.Flags().StringSliceVar(&tags, "tags", []string{}, "comma-separated tags enabled for the run")
-	storeCmd.Flags().StringSliceVarP(&retests, "rerun", "r", []string{}, "comma-separated source output for retests")
+	storeCmd.Flags().StringVarP(&storeFlags.runCommand, "cmd", "c", "", "test execution command")
+	storeCmd.Flags().StringVarP(&storeFlags.sha, "sha", "z", "", "git sha of test run")
+	storeCmd.Flags().StringVarP(&storeFlags.start, "time", "m", "", "time of test run")
+	storeCmd.Flags().StringVarP(&storeFlags.src, "src", "s", "", "source test output file")
+	storeCmd.Flags().BoolVar(&storeFlags.bench, "bench", false, "indicate if test ran benchmarks")
+	storeCmd.Flags().BoolVar(&storeFlags.short, "short", false, "indicate if test is run with -short flag")
+	storeCmd.Flags().BoolVar(&storeFlags.race, "race", false, "indicate if test is run with -race flag")
+	storeCmd.Flags().StringSliceVar(&storeFlags.tags, "tags", []string{}, "comma-separated tags enabled for the run")
+	storeCmd.Flags().StringSliceVarP(&storeFlags.retests, "rerun", "r", []string{}, "comma-separated source output for retests")
 
 	RootCmd.AddCommand(storeCmd)
 }

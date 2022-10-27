@@ -9,14 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var retests []string
+type flakyCmdFlags struct {
+	retests []string
+}
+
+var flakyFlags flakyCmdFlags
 
 var flakyCmd = &cobra.Command{
 	Use:   "flaky",
 	Short: "lists packages suspected of having flaky tests",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		pkgs := gocop.FlakyFile(retests...)
+		pkgs := gocop.FlakyFile(flakyFlags.retests...)
 		fmt.Print(strings.Join(pkgs, "\n"))
 	},
 }
@@ -24,7 +28,7 @@ var flakyCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(flakyCmd)
 
-	flakyCmd.Flags().StringSliceVarP(&retests, "retests", "r", []string{}, "source output for retests")
+	flakyCmd.Flags().StringSliceVarP(&flakyFlags.retests, "retests", "r", []string{}, "source output for retests")
 	err := flakyCmd.MarkFlagRequired("retests")
 	if err != nil {
 		log.Fatal(err)
