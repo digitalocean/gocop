@@ -33,8 +33,8 @@ func Parse(output []byte) [][]string {
 	return packages
 }
 
-// ParseFailed iterates over test output for failed packages
-func ParseFailed(output []byte) []string {
+// ParseFailedPackages iterates over test output for failed packages
+func ParseFailedPackages(output []byte) []string {
 	re := regexp.MustCompile(ResultsPattern)
 	matches := re.FindAllSubmatch(output, -1)
 
@@ -48,14 +48,14 @@ func ParseFailed(output []byte) []string {
 	return packages
 }
 
-// ParseFileFailed reads a file to Parse() failed packages
-func ParseFileFailed(path string) []string {
+// ParseFileFailedPackages reads a file to Parse() failed packages
+func ParseFileFailedPackages(path string) []string {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return ParseFailed(content)
+	return ParseFailedPackages(content)
 }
 
 // ParseFile reads a file to Parse() results

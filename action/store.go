@@ -110,7 +110,7 @@ var storeCmd = &cobra.Command{
 		}
 
 		if len(storeFlags.retests) > 0 {
-			pkgs := gocop.FlakyFile(storeFlags.retests...)
+			pkgs := gocop.FlakyFilePackages(storeFlags.retests...)
 			for _, entry := range pkgs {
 				testResults = append(testResults, gocop.TestResult{Package: entry, Result: "flaky"})
 			}

@@ -9,7 +9,7 @@ import (
 	"github.com/poy/onpar/matchers"
 )
 
-func TestParseFileFailed(t *testing.T) {
+func TestParseFileFailedPackages(t *testing.T) {
 	o := onpar.New()
 	defer o.Run(t)
 
@@ -36,13 +36,13 @@ func TestParseFileFailed(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := gocop.ParseFileFailed(tt.input)
+			got := gocop.ParseFileFailedPackages(tt.input)
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
 }
 
-func TestFlakyFile(t *testing.T) {
+func TestFlakyFilePackages(t *testing.T) {
 	o := onpar.New()
 	defer o.Run(t)
 
@@ -69,7 +69,7 @@ func TestFlakyFile(t *testing.T) {
 
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
-			got := gocop.FlakyFile(tt.input...)
+			got := gocop.FlakyFilePackages(tt.input...)
 			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
