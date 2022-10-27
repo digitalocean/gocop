@@ -1,8 +1,8 @@
 package gocop
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 )
 
@@ -50,7 +50,7 @@ func ParseFailed(output []byte) []string {
 
 // ParseFileFailed reads a file to Parse() failed packages
 func ParseFileFailed(path string) []string {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func ParseFileFailed(path string) []string {
 
 // ParseFile reads a file to Parse() results
 func ParseFile(path string) [][]string {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}

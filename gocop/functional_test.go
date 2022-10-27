@@ -7,7 +7,6 @@ import (
 	"github.com/poy/onpar"
 	"github.com/poy/onpar/expect"
 	"github.com/poy/onpar/matchers"
-	. "github.com/poy/onpar/matchers"
 )
 
 func TestParseFileFailed(t *testing.T) {
@@ -38,7 +37,7 @@ func TestParseFileFailed(t *testing.T) {
 	for _, tt := range tests {
 		o.Spec(tt.name, func(expect expect.Expectation) {
 			got := gocop.ParseFileFailed(tt.input)
-			expect(got).To(Equal(tt.want))
+			expect(got).To(matchers.Equal(tt.want))
 		})
 	}
 }
