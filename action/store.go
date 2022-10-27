@@ -2,21 +2,17 @@ package action
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/digitalocean/gocop/gocop"
 	"github.com/digitalocean/gocop/gocop/storer"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type storeCmdFlags struct {
-	host       string
-	port       string
-	dbName     string
-	user       string
-	password   string
-	sslMode    string
 	repo       string
 	branch     string
 	sha        string
@@ -29,9 +25,13 @@ type storeCmdFlags struct {
 	race       bool
 	tags       []string
 	retests    []string
+	storerName string
 }
 
-var storeFlags storeCmdFlags
+var storeFlags struct {
+	storeCmdFlags
+	storer Storer
+}
 
 var testResults []storer.TestResult
 
@@ -40,15 +40,29 @@ var storeCmd = &cobra.Command{
 	Use:   "store",
 	Short: "stores test results to database",
 	Long:  ``,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		storer := registeredStorers[storeFlags.storerName]
+		if storer == nil {
+			return fmt.Errorf("unrecognized storer %s", storeFlags.storerName)
+		}
+
+		for _, f := range storer.Required() {
+			err := cmd.MarkFlagRequired(fmt.Sprintf("%s.%s", storer.Name(), f))
+			if err != nil {
+				return err
+			}
+		}
+
+		storeFlags.storer = storer
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
 
-		var err error
-		s, err := storer.NewPSQL(
-			storeFlags.host, storeFlags.port,
-			storeFlags.user, storeFlags.password,
-			storeFlags.dbName, storeFlags.sslMode,
-		)
+		s, err := storeFlags.storer.Storer()
+		if err != nil {
+			log.Fatalln(err)
+		}
 		defer func() {
 			err = s.Close()
 			if err != nil {
@@ -115,21 +129,11 @@ var storeCmd = &cobra.Command{
 }
 
 func init() {
-	storeCmd.Flags().StringVarP(&storeFlags.host, "host", "a", "localhost", "database host")
-	storeCmd.Flags().StringVarP(&storeFlags.port, "port", "t", "5432", "database port")
-	storeCmd.Flags().StringVarP(&storeFlags.dbName, "database", "x", "postgres", "database name")
-	storeCmd.Flags().StringVarP(&storeFlags.sslMode, "ssl", "y", "require", "database ssl mode")
-	storeCmd.Flags().StringVarP(&storeFlags.password, "pass", "p", "", "database password")
-	err := storeCmd.MarkFlagRequired("pass")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	storeCmd.Flags().StringVarP(&storeFlags.user, "user", "u", "postgres", "database username")
+	storeCmd.Flags().StringVarP(&storeFlags.storerName, "storer", "", "sql", fmt.Sprintf("storer name. supported options: %v", registeredStorerNames))
 	storeCmd.Flags().StringVarP(&storeFlags.repo, "repo", "g", "", "repository name")
 	storeCmd.Flags().StringVarP(&storeFlags.branch, "branch", "b", "master", "branch name")
 	storeCmd.Flags().Int64VarP(&storeFlags.buildID, "build-id", "i", 0, "build id")
-	err = storeCmd.MarkFlagRequired("build-id")
+	err := storeCmd.MarkFlagRequired("build-id")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,6 +142,7 @@ func init() {
 	storeCmd.Flags().StringVarP(&storeFlags.sha, "sha", "z", "", "git sha of test run")
 	storeCmd.Flags().StringVarP(&storeFlags.start, "time", "m", "", "time of test run")
 	storeCmd.Flags().StringVarP(&storeFlags.src, "src", "s", "", "source test output file")
+	storeCmd.MarkFlagFilename("src")
 	storeCmd.Flags().BoolVar(&storeFlags.bench, "bench", false, "indicate if test ran benchmarks")
 	storeCmd.Flags().BoolVar(&storeFlags.short, "short", false, "indicate if test is run with -short flag")
 	storeCmd.Flags().BoolVar(&storeFlags.race, "race", false, "indicate if test is run with -race flag")
@@ -145,4 +150,81 @@ func init() {
 	storeCmd.Flags().StringSliceVarP(&storeFlags.retests, "rerun", "r", []string{}, "comma-separated source output for retests")
 
 	RootCmd.AddCommand(storeCmd)
+	RegisterStorer(&PSQLStorer{})
+}
+
+var (
+	registeredStorerNames []string
+	registeredStorers     = map[string]Storer{}
+)
+
+// RegisterStorer registers a storer with the `store` command.
+func RegisterStorer(storer Storer) {
+	fs := storer.FlagSet()
+	// add the storer name as a prefix to the flag names
+	fs.VisitAll(func(f *pflag.Flag) {
+		f.Name = fmt.Sprintf("%s.%s", storer.Name(), f.Name)
+		// clear shorthands to avoid conflicts with other flags
+		f.Shorthand = ""
+	})
+
+	registeredStorers[storer.Name()] = storer
+	registeredStorerNames = append(registeredStorerNames, storer.Name())
+
+	// add the flags to the store command
+	storeCmd.Flags().AddFlagSet(&fs)
+	storeCmd.Flags().Lookup("storer").Usage = fmt.Sprintf("storer name. supported options: %v", registeredStorerNames)
+}
+
+// Storer allows the `store` CLI to support different storers.
+type Storer interface {
+	// Name returns the storer's name.
+	Name() string
+	// FlagSet returns a flagset to be added to the command so that users can pass configuration options as flags.
+	FlagSet() (flagSet pflag.FlagSet)
+	// Required returns a list of required flags.
+	Required() []string
+	// Storer creates the storer instance.
+	Storer() (storer.Storer, error)
+}
+
+type PSQLStorer struct {
+	host     string
+	port     string
+	dbName   string
+	user     string
+	password string
+	sslMode  string
+}
+
+// Name returns the storer's name.
+func (s *PSQLStorer) Name() string {
+	return "psql"
+}
+
+// FlagSet returns a flagset to be added to the command so that users can pass configuration options as flags.
+func (s *PSQLStorer) FlagSet() pflag.FlagSet {
+	var fs pflag.FlagSet
+	fs.StringVarP(&s.host, "host", "a", "localhost", "database host")
+	fs.StringVarP(&s.port, "port", "t", "5432", "database port")
+	fs.StringVarP(&s.dbName, "database", "x", "postgres", "database name")
+	fs.StringVarP(&s.sslMode, "ssl", "y", "require", "database ssl mode")
+	fs.StringVarP(&s.password, "pass", "p", "", "database password")
+	fs.StringVarP(&s.user, "user", "u", "postgres", "database username")
+
+	return fs
+}
+
+// Storer creates the storer instance.
+func (s *PSQLStorer) Storer() (storer.Storer, error) {
+	return storer.NewPSQL(
+		s.host, s.port,
+		s.user, s.password,
+		s.dbName, s.sslMode,
+	)
+}
+
+// Required returns a list of required flags.
+func (s *PSQLStorer) Required() []string {
+	return []string{"pass"}
 }
