@@ -44,7 +44,7 @@ var storeCmd = &cobra.Command{
 		ctx := context.Background()
 
 		var err error
-		s, err := storer.NewSQL(
+		s, err := storer.NewPSQL(
 			storeFlags.host, storeFlags.port,
 			storeFlags.user, storeFlags.password,
 			storeFlags.dbName, storeFlags.sslMode,

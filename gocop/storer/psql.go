@@ -12,12 +12,12 @@ import (
 	_ "github.com/lib/pq" // import postgres driver
 )
 
-type SQL struct {
+type PSQL struct {
 	db *sql.DB
 }
 
-// NewSQL creates a new SQL storer instance. Currently hardcoded for postgres databases.
-func NewSQL(host, port, user, password, dbname, sslmode string) (Storer, error) {
+// NewPSQL creates a new PostgresSQL storer instance.
+func NewPSQL(host, port, user, password, dbname, sslmode string) (Storer, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
@@ -29,11 +29,11 @@ func NewSQL(host, port, user, password, dbname, sslmode string) (Storer, error) 
 	if err != nil {
 		return nil, fmt.Errorf("pinging database: %w", err)
 	}
-	return &SQL{db}, nil
+	return &PSQL{db}, nil
 }
 
 // InsertRun inserts a new entry to the run table in the database
-func (s *SQL) InsertRun(ctx context.Context, run TestRun) error {
+func (s *PSQL) InsertRun(ctx context.Context, run TestRun) error {
 	sqlStr := `
 		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -62,7 +62,7 @@ func (s *SQL) InsertRun(ctx context.Context, run TestRun) error {
 }
 
 // GetRun retrieves information about a run
-func (s *SQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
+func (s *PSQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
 	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, benchmark, race, short, tags
 		FROM run
 		WHERE build_id=$1`
@@ -88,7 +88,7 @@ func (s *SQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
 }
 
 // InsertTests adds test results to database
-func (s *SQL) InsertTests(ctx context.Context, testResults []TestResult) error {
+func (s *PSQL) InsertTests(ctx context.Context, testResults []TestResult) error {
 	sqlStr := "INSERT INTO test(created, package, result, duration, coverage) VALUES "
 	vals := []interface{}{}
 
@@ -104,21 +104,18 @@ func (s *SQL) InsertTests(ctx context.Context, testResults []TestResult) error {
 	sqlStr = strings.TrimSuffix(sqlStr, ",")
 
 	// Replacing ? with $n for postgres
-	sqlStr = replaceSQL(sqlStr, "?")
+	sqlStr = replacePSQL(sqlStr, "?")
 	stmt, err := s.db.PrepareContext(ctx, sqlStr)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(sqlStr)
-	fmt.Println(vals)
 
 	_, err = stmt.ExecContext(ctx, vals...)
 	return err
 }
 
 // GetTests retrieves test results for a build
-func (s *SQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, error) {
+func (s *PSQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, error) {
 	sqlStr := `
 		SELECT created, package, result, duration, coverage
 		FROM test
@@ -153,12 +150,12 @@ func (s *SQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, e
 }
 
 // Close closes the underlying SQL connection.
-func (s *SQL) Close() error {
+func (s *PSQL) Close() error {
 	return s.db.Close()
 }
 
-// replaceSQL replaces the instance occurrence of any string pattern with an increasing $n based sequence
-func replaceSQL(old, searchPattern string) string {
+// replacePSQL replaces the instance occurrence of any string pattern with an increasing $n based sequence
+func replacePSQL(old, searchPattern string) string {
 	tmpCount := strings.Count(old, searchPattern)
 	for m := 1; m <= tmpCount; m++ {
 		old = strings.Replace(old, searchPattern, "$"+strconv.Itoa(m), 1)

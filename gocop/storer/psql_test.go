@@ -26,7 +26,7 @@ func TestInsertResults(t *testing.T) {
 	ssl := getenv("DB_SSL", "disable")
 	user := getenv("DB_USER", "postgres")
 	password := getenv("DB_PASS", "testuser")
-	db, err := NewSQL(host, port, user, password, name, ssl)
+	db, err := NewPSQL(host, port, user, password, name, ssl)
 	if err != nil {
 		t.Fatal(err)
 	}
