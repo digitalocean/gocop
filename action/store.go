@@ -129,7 +129,7 @@ var storeCmd = &cobra.Command{
 }
 
 func init() {
-	storeCmd.Flags().StringVarP(&storeFlags.storerName, "storer", "", "sql", fmt.Sprintf("storer name. supported options: %v", registeredStorerNames))
+	storeCmd.Flags().StringVarP(&storeFlags.storerName, "storer", "", "psql", fmt.Sprintf("storer name. supported options: %v", registeredStorerNames))
 	storeCmd.Flags().StringVarP(&storeFlags.repo, "repo", "g", "", "repository name")
 	storeCmd.Flags().StringVarP(&storeFlags.branch, "branch", "b", "master", "branch name")
 	storeCmd.Flags().Int64VarP(&storeFlags.buildID, "build-id", "i", 0, "build id")

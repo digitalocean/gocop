@@ -50,7 +50,7 @@ func TestInsertResults(t *testing.T) {
 		Result:   "fail",
 		Created:  run.Created,
 		Duration: time.Second,
-		Coverage: 88.0,
+		Coverage: 0.834,
 	}
 
 	testResults = append(testResults, result)
