@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/digitalocean/gocop/gocop/storer"
 )
 
 const (
@@ -14,14 +16,14 @@ const (
 )
 
 // Parse iterates over test output for all packages
-func Parse(output []byte) ([]TestResult, error) {
-	var results []TestResult
+func Parse(output []byte) ([]storer.TestResult, error) {
+	var results []storer.TestResult
 
 	re := regexp.MustCompile(ResultsPattern)
 	matches := re.FindAllStringSubmatch(string(output), -1)
 
 	for _, match := range matches {
-		event := TestResult{
+		event := storer.TestResult{
 			Package: match[3],
 		}
 
@@ -83,7 +85,7 @@ func ParseFileFailedPackages(path string) ([]string, error) {
 }
 
 // ParseFile reads a file to Parse() results
-func ParseFile(path string) ([]TestResult, error) {
+func ParseFile(path string) ([]storer.TestResult, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)

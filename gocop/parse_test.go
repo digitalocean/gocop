@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/digitalocean/gocop/gocop/storer"
 	"github.com/poy/onpar"
 	"github.com/poy/onpar/expect"
 	"github.com/poy/onpar/matchers"
@@ -105,7 +106,7 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name  string
 		input []byte
-		want  []TestResult
+		want  []storer.TestResult
 	}{
 		{
 			name: "finds multiple failed packages",
@@ -120,7 +121,7 @@ func TestParse(t *testing.T) {
 				FAIL	github.com/digitalocean/gocop/sample/flaky	1.685s
 				ok  	github.com/digitalocean/gocop/sample/pass	1.129s coverage: 50.0% of statements
 			`),
-			want: []TestResult{
+			want: []storer.TestResult{
 				// {"FAIL", "github.com/digitalocean/gocop/sample/fail", "0.600s", ""},
 				{
 					Result:   "fail",

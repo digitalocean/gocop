@@ -1,13 +1,13 @@
+//go:build integration
 // +build integration
 
-package gocop_test
+package storer
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/digitalocean/gocop/gocop"
 )
 
 func getenv(key, fallback string) string {
@@ -19,29 +19,33 @@ func getenv(key, fallback string) string {
 }
 
 func TestInsertResults(t *testing.T) {
+	ctx := context.Background()
 	host := getenv("DB_HOST", "localhost")
 	port := getenv("DB_PORT", "5432")
 	name := getenv("DB_NAME", "postgres")
 	ssl := getenv("DB_SSL", "disable")
 	user := getenv("DB_USER", "postgres")
 	password := getenv("DB_PASS", "testuser")
-	db := gocop.ConnectDB(host, port, user, password, name, ssl)
+	db, err := NewPSQL(host, port, user, password, name, ssl)
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer db.Close()
 
-	run := gocop.TestRun{
+	run := TestRun{
 		BuildID: 2,
 		Repo:    "test_repo",
 		Branch:  "master",
 		Created: time.Now().UTC(),
 	}
 
-	_, err := gocop.InsertRun(db, run)
+	err = db.InsertRun(ctx, run)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
-	testResults := make([]gocop.TestResult, 0)
-	result := gocop.TestResult{
+	testResults := make([]TestResult, 0)
+	result := TestResult{
 		Package:  "test1",
 		Result:   "fail",
 		Created:  run.Created,
@@ -50,17 +54,16 @@ func TestInsertResults(t *testing.T) {
 	}
 
 	testResults = append(testResults, result)
-	_, err = gocop.InsertTests(db, run.Created, testResults)
+	err = db.InsertTests(ctx, testResults)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
-	rows, err := gocop.GetTests(db, run.Created)
-	var count int
-	for rows.Next() {
-		count = count + 1
+	tests, err := db.GetTests(ctx, run.Created)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if count != 1 {
-		t.Fail()
+	if len(tests) != 1 {
+		t.Fatalf("expected 1 test result, got %d", len(tests))
 	}
 }
