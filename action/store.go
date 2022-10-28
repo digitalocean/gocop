@@ -8,6 +8,7 @@ import (
 
 	"github.com/digitalocean/gocop/gocop"
 	"github.com/digitalocean/gocop/gocop/storer"
+	"github.com/gofrs/uuid"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -28,6 +29,8 @@ type storeCmdFlags struct {
 	test2json              bool
 	includeIndividualTests bool
 	storerName             string
+	team                   string
+	jobName                string
 }
 
 var storeFlags struct {
@@ -73,6 +76,12 @@ var storeCmd = &cobra.Command{
 		}()
 
 		run := storer.TestRun{
+			ID: uuid.NullUUID{
+				Valid: true,
+				UUID:  uuid.Must(uuid.NewV4()),
+			},
+			Team:      storeFlags.team,
+			JobName:   storeFlags.jobName,
 			BuildID:   storeFlags.buildID,
 			Repo:      storeFlags.repo,
 			Branch:    storeFlags.branch,
@@ -96,10 +105,6 @@ var storeCmd = &cobra.Command{
 			log.Fatal("--include-tests is only supported with --test2json format")
 		}
 
-		if storeFlags.includeIndividualTests {
-			log.Fatal("storing individual tests is not yet supported")
-		}
-
 		var parser gocop.Parser
 		if storeFlags.test2json {
 			parser = &gocop.Test2JSONParser{
@@ -117,6 +122,7 @@ var storeCmd = &cobra.Command{
 
 			for _, test := range tests {
 				test.Created = run.Created
+				test.RunID = run.ID
 				testResults = append(testResults, test)
 			}
 		}
@@ -128,6 +134,7 @@ var storeCmd = &cobra.Command{
 			}
 			for _, entry := range pkgs {
 				testResults = append(testResults, storer.TestResult{
+					RunID:   run.ID,
 					Created: run.Created,
 					Package: entry,
 					Result:  "flaky",
@@ -156,6 +163,9 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	storeCmd.Flags().StringVarP(&storeFlags.team, "team", "", "", "optional name of the team the test run belongs to")
+	storeCmd.Flags().StringVarP(&storeFlags.jobName, "job-name", "", "", "optional job name for this test run")
 
 	storeCmd.Flags().StringVarP(&storeFlags.runCommand, "cmd", "c", "", "test execution command")
 	storeCmd.Flags().StringVarP(&storeFlags.sha, "sha", "z", "", "git sha of test run")
