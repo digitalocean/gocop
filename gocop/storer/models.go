@@ -1,6 +1,7 @@
 package storer
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -34,4 +35,9 @@ type TestResult struct {
 	Result   string
 	Duration time.Duration
 	Coverage float64
+}
+
+// Key represents a canonical key for a test result based on package and test name
+func (r *TestResult) Key() string {
+	return fmt.Sprintf("%s:%s", r.Package, r.Test)
 }

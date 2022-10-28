@@ -1,0 +1,23 @@
+# cover github.com/digitalocean/gocop/sample/failbuild
+2022/10/28 09:22:00 cover: /home/ntate/code/digitalocean/gocop/sample/failbuild/broken.go: /home/ntate/code/digitalocean/gocop/sample/failbuild/broken.go:5:1: expected declaration, found fun
+=== RUN   TestWillPass
+--- PASS: TestWillPass (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	github.com/digitalocean/gocop/sample/pass	0.002s	coverage: 100.0% of statements
+=== RUN   TestMightFail
+--- PASS: TestMightFail (0.00s)
+PASS
+coverage: [no statements]
+ok  	github.com/digitalocean/gocop/sample/flaky	0.003s	coverage: [no statements]
+=== RUN   TestWillFail
+    failing_test.go:13: number does equal eleven
+--- FAIL: TestWillFail (0.00s)
+FAIL
+coverage: [no statements]
+FAIL	github.com/digitalocean/gocop/sample/fail	0.001s
+WARN invalid TestEvent: FAIL	github.com/digitalocean/gocop/sample/failbuild [build failed]
+bad output from test2json: FAIL	github.com/digitalocean/gocop/sample/failbuild [build failed]
+?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+
+DONE 3 tests, 1 failure, 1 error in 0.176s
