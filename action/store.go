@@ -191,6 +191,7 @@ func init() {
 
 	RootCmd.AddCommand(storeCmd)
 	RegisterStorer(&PSQLStorer{})
+	RegisterStorer(&StdoutStorer{})
 }
 
 var (
@@ -268,4 +269,28 @@ func (s *PSQLStorer) Storer() (storer.Storer, error) {
 // Required returns a list of required flags.
 func (s *PSQLStorer) Required() []string {
 	return []string{"pass"}
+}
+
+// StdoutStorer represents a stdout storer for testing.
+type StdoutStorer struct{}
+
+// Name returns the storer's name.
+func (s *StdoutStorer) Name() string {
+	return "stdout"
+}
+
+// FlagSet returns a flagset to be added to the command so that users can pass configuration options as flags.
+func (s *StdoutStorer) FlagSet() pflag.FlagSet {
+	var fs pflag.FlagSet
+	return fs
+}
+
+// Storer creates the storer instance.
+func (s *StdoutStorer) Storer() (storer.Storer, error) {
+	return storer.NewStdout()
+}
+
+// Required returns a list of required flags.
+func (s *StdoutStorer) Required() []string {
+	return nil
 }
