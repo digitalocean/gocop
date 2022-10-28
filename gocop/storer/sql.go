@@ -1,10 +1,9 @@
-package gocop
+package storer
 
 import (
+	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -13,24 +12,28 @@ import (
 	_ "github.com/lib/pq" // import postgres driver
 )
 
-// ConnectDB connects to the database
-func ConnectDB(host, port, user, password, dbname, sslmode string) *sql.DB {
+type SQL struct {
+	db *sql.DB
+}
+
+// NewSQL creates a new SQL storer instance. Currently hardcoded for postgres databases.
+func NewSQL(host, port, user, password, dbname, sslmode string) (Storer, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("opening sql connection: %w", err)
 	}
 	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("pinging database: %w", err)
 	}
-	return db
+	return &SQL{db}, nil
 }
 
 // InsertRun inserts a new entry to the run table in the database
-func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
+func (s *SQL) InsertRun(ctx context.Context, run TestRun) error {
 	sqlStr := `
 		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -39,7 +42,8 @@ func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 	sort.Strings(run.Tags)
 	tags := strings.Join(run.Tags, " ")
 
-	res, err := db.Exec(
+	_, err := s.db.ExecContext(
+		ctx,
 		sqlStr,
 		run.Created,
 		run.BuildID,
@@ -54,57 +58,107 @@ func InsertRun(db *sql.DB, run TestRun) (sql.Result, error) {
 		tags,
 	)
 
-	return res, err
+	return err
 }
 
 // GetRun retrieves information about a run
-func GetRun(db *sql.DB, buildID int64) *sql.Row {
+func (s *SQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
 	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, benchmark, race, short, tags
 		FROM run
 		WHERE build_id=$1`
 
-	return db.QueryRow(sqlStr, buildID)
+	var r TestRun
+	err := s.db.QueryRowContext(ctx, sqlStr, buildID).Scan(
+		&r.BuildID,
+		&r.Created,
+		&r.Duration,
+		&r.Command,
+		&r.Repo,
+		&r.Branch,
+		&r.Sha,
+		&r.Benchmark,
+		&r.Race,
+		&r.Short,
+		&r.Tags,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
 }
 
 // InsertTests adds test results to database
-func InsertTests(db *sql.DB, created time.Time, testResults []TestResult) (sql.Result, error) {
+func (s *SQL) InsertTests(ctx context.Context, testResults []TestResult) error {
 	sqlStr := "INSERT INTO test(created, package, result, duration, coverage) VALUES "
 	vals := []interface{}{}
 
 	for _, row := range testResults {
 		sqlStr += "(?, ?, ?, ?, ?),"
-		vals = append(vals, row.Created, row.Package, row.Result, row.Duration/time.Millisecond, row.Coverage)
+		vals = append(vals, row.Created, row.Package, row.Result, int(row.Duration/time.Millisecond), row.Coverage)
 	}
 	if len(vals) == 0 {
-		return nil, errors.New("no test results found")
+		return nil
 	}
 
 	// trim the last ,
 	sqlStr = strings.TrimSuffix(sqlStr, ",")
 
 	// Replacing ? with $n for postgres
-	sqlStr = ReplaceSQL(sqlStr, "?")
-	stmt, err := db.Prepare(sqlStr)
+	sqlStr = replaceSQL(sqlStr, "?")
+	stmt, err := s.db.PrepareContext(ctx, sqlStr)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return stmt.Exec(vals...)
+	fmt.Println(sqlStr)
+	fmt.Println(vals)
+
+	_, err = stmt.ExecContext(ctx, vals...)
+	return err
 }
 
 // GetTests retrieves test results for a build
-func GetTests(db *sql.DB, created time.Time) (*sql.Rows, error) {
+func (s *SQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, error) {
 	sqlStr := `
 		SELECT created, package, result, duration, coverage
 		FROM test
 		WHERE created=$1
 	`
 
-	return db.Query(sqlStr, created)
+	row, err := s.db.QueryContext(ctx, sqlStr, created)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []*TestResult
+	for row.Next() {
+		var r TestResult
+		err := row.Scan(
+			&r.Created,
+			&r.Package,
+			&r.Result,
+			&r.Duration,
+			&r.Coverage,
+		)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, &r)
+	}
+	if err := row.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
-// ReplaceSQL replaces the instance occurrence of any string pattern with an increasing $n based sequence
-func ReplaceSQL(old, searchPattern string) string {
+// Close closes the underlying SQL connection.
+func (s *SQL) Close() error {
+	return s.db.Close()
+}
+
+// replaceSQL replaces the instance occurrence of any string pattern with an increasing $n based sequence
+func replaceSQL(old, searchPattern string) string {
 	tmpCount := strings.Count(old, searchPattern)
 	for m := 1; m <= tmpCount; m++ {
 		old = strings.Replace(old, searchPattern, "$"+strconv.Itoa(m), 1)

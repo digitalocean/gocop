@@ -1,10 +1,12 @@
 package action
 
 import (
+	"context"
 	"log"
 	"time"
 
 	"github.com/digitalocean/gocop/gocop"
+	"github.com/digitalocean/gocop/gocop/storer"
 	"github.com/spf13/cobra"
 )
 
@@ -31,28 +33,30 @@ type storeCmdFlags struct {
 
 var storeFlags storeCmdFlags
 
-var testResults []gocop.TestResult
+var testResults []storer.TestResult
 
+// storeCmd is the `store` subcommand
 var storeCmd = &cobra.Command{
 	Use:   "store",
 	Short: "stores test results to database",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		var err error
+		ctx := context.Background()
 
-		db := gocop.ConnectDB(
+		var err error
+		s, err := storer.NewSQL(
 			storeFlags.host, storeFlags.port,
 			storeFlags.user, storeFlags.password,
 			storeFlags.dbName, storeFlags.sslMode,
 		)
 		defer func() {
-			err = db.Close()
+			err = s.Close()
 			if err != nil {
 				log.Fatalln(err)
 			}
 		}()
 
-		run := gocop.TestRun{
+		run := storer.TestRun{
 			BuildID:   storeFlags.buildID,
 			Repo:      storeFlags.repo,
 			Branch:    storeFlags.branch,
@@ -90,16 +94,20 @@ var storeCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			for _, entry := range pkgs {
-				testResults = append(testResults, gocop.TestResult{Package: entry, Result: "flaky"})
+				testResults = append(testResults, storer.TestResult{
+					Created: run.Created,
+					Package: entry,
+					Result:  "flaky",
+				})
 			}
 		}
 
-		_, err = gocop.InsertRun(db, run)
+		err = s.InsertRun(ctx, run)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		_, err = gocop.InsertTests(db, run.Created, testResults)
+		err = s.InsertTests(ctx, testResults)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -107,7 +115,6 @@ var storeCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(storeCmd)
 	storeCmd.Flags().StringVarP(&storeFlags.host, "host", "a", "localhost", "database host")
 	storeCmd.Flags().StringVarP(&storeFlags.port, "port", "t", "5432", "database port")
 	storeCmd.Flags().StringVarP(&storeFlags.dbName, "database", "x", "postgres", "database name")
