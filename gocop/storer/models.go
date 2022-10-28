@@ -9,7 +9,7 @@ import (
 
 // TestRun contains data about a test run
 type TestRun struct {
-	ID        uuid.UUID
+	ID        uuid.NullUUID
 	Created   time.Time
 	Team      string
 	JobName   string
@@ -28,7 +28,7 @@ type TestRun struct {
 
 // TestResult contains data about a test result
 type TestResult struct {
-	RunID    uuid.UUID
+	RunID    uuid.NullUUID
 	Created  time.Time
 	Package  string
 	Test     string

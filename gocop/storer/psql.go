@@ -36,8 +36,8 @@ func NewPSQL(host, port, user, password, dbname, sslmode string) (Storer, error)
 // InsertRun inserts a new entry to the run table in the database
 func (s *PSQL) InsertRun(ctx context.Context, run TestRun) error {
 	sqlStr := `
-		INSERT INTO run (created, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		INSERT INTO run (id, created, team, job_name, build_id, repo, duration, branch, sha, cmd, benchmark, short, race, tags)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 	`
 
 	sort.Strings(run.Tags)
@@ -46,7 +46,10 @@ func (s *PSQL) InsertRun(ctx context.Context, run TestRun) error {
 	_, err := s.db.ExecContext(
 		ctx,
 		sqlStr,
+		run.ID,
 		run.Created,
+		run.Team,
+		run.JobName,
 		run.BuildID,
 		run.Repo,
 		run.Duration,
@@ -64,14 +67,19 @@ func (s *PSQL) InsertRun(ctx context.Context, run TestRun) error {
 
 // GetRun retrieves information about a run
 func (s *PSQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
-	sqlStr := `SELECT build_id, created, duration, cmd, repo, branch, sha, benchmark, race, short, tags
+	sqlStr := `SELECT id, build_id, created, team, job_name, duration, cmd, repo, branch, sha, benchmark, race, short, tags
 		FROM run
 		WHERE build_id=$1`
 
+	var tagStr string
+
 	var r TestRun
 	err := s.db.QueryRowContext(ctx, sqlStr, buildID).Scan(
+		&r.ID,
 		&r.BuildID,
 		&r.Created,
+		&r.Team,
+		&r.JobName,
 		&r.Duration,
 		&r.Command,
 		&r.Repo,
@@ -80,22 +88,24 @@ func (s *PSQL) GetRun(ctx context.Context, buildID int64) (*TestRun, error) {
 		&r.Benchmark,
 		&r.Race,
 		&r.Short,
-		&r.Tags,
+		&tagStr,
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	r.Tags = strings.Split(tagStr, " ")
 	return &r, nil
 }
 
 // InsertTests adds test results to database
 func (s *PSQL) InsertTests(ctx context.Context, testResults []TestResult) error {
-	sqlStr := "INSERT INTO test(created, package, result, duration, coverage) VALUES "
+	sqlStr := "INSERT INTO test(run_id, created, package, test, result, duration, coverage) VALUES "
 	vals := []interface{}{}
 
 	for _, row := range testResults {
-		sqlStr += "(?, ?, ?, ?, ?),"
-		vals = append(vals, row.Created, row.Package, row.Result, int(row.Duration/time.Millisecond), row.Coverage)
+		sqlStr += "(?, ?, ?, ?, ?, ?, ?),"
+		vals = append(vals, row.RunID, row.Created, row.Package, row.Test, row.Result, int(row.Duration/time.Millisecond), row.Coverage)
 	}
 	if len(vals) == 0 {
 		return nil
@@ -118,7 +128,7 @@ func (s *PSQL) InsertTests(ctx context.Context, testResults []TestResult) error 
 // GetTests retrieves test results for a build
 func (s *PSQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, error) {
 	sqlStr := `
-		SELECT created, package, result, duration, coverage
+		SELECT run_id, created, package, test, result, duration, coverage
 		FROM test
 		WHERE created=$1
 	`
@@ -132,8 +142,10 @@ func (s *PSQL) GetTests(ctx context.Context, created time.Time) ([]*TestResult, 
 	for row.Next() {
 		var r TestResult
 		err := row.Scan(
+			&r.RunID,
 			&r.Created,
 			&r.Package,
+			&r.Test,
 			&r.Result,
 			&r.Duration,
 			&r.Coverage,
