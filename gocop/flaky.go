@@ -6,13 +6,13 @@ import (
 )
 
 // FlakyPackages reviews test output from multiple attempts and identifies potentially flaky packages
-func FlakyPackages(runs ...[]byte) ([]string, error) {
+func FlakyPackages(p Parser, runs ...[]byte) ([]string, error) {
 	failCount := make(map[string]int)
 	runCount := len(runs)
 	flaky := make([]string, 0)
 
 	for _, run := range runs {
-		pkgs, err := ParseFailedPackages(run)
+		pkgs, err := ParseFailedPackages(p, run)
 		if err != nil {
 			return nil, err
 		}
@@ -35,7 +35,7 @@ func FlakyPackages(runs ...[]byte) ([]string, error) {
 }
 
 // FlakyFilePackages reviews test output from multiple files to identify flaky packages
-func FlakyFilePackages(files ...string) ([]string, error) {
+func FlakyFilePackages(p Parser, files ...string) ([]string, error) {
 	runs := make([][]byte, 0)
 	for _, file := range files {
 		run, err := os.ReadFile(file)
@@ -46,5 +46,5 @@ func FlakyFilePackages(files ...string) ([]string, error) {
 		runs = append(runs, run)
 	}
 
-	return FlakyPackages(runs...)
+	return FlakyPackages(p, runs...)
 }

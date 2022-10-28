@@ -1,0 +1,27 @@
+{"Time":"2022-10-28T09:22:01.36320476-07:00","Action":"run","Package":"github.com/digitalocean/gocop/sample/fail","Test":"TestWillFail"}
+{"Time":"2022-10-28T09:22:01.363321021-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Test":"TestWillFail","Output":"=== RUN   TestWillFail\n"}
+{"Time":"2022-10-28T09:22:01.363331451-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Test":"TestWillFail","Output":"    failing_test.go:13: number does equal eleven\n"}
+{"Time":"2022-10-28T09:22:01.363337618-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Test":"TestWillFail","Output":"--- FAIL: TestWillFail (0.00s)\n"}
+{"Time":"2022-10-28T09:22:01.363340772-07:00","Action":"fail","Package":"github.com/digitalocean/gocop/sample/fail","Test":"TestWillFail","Elapsed":0}
+{"Time":"2022-10-28T09:22:01.363346164-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Output":"FAIL\n"}
+{"Time":"2022-10-28T09:22:01.363349789-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Output":"coverage: [no statements]\n"}
+{"Time":"2022-10-28T09:22:01.363866972-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/fail","Output":"FAIL\tgithub.com/digitalocean/gocop/sample/fail\t0.002s\n"}
+{"Time":"2022-10-28T09:22:01.36389213-07:00","Action":"fail","Package":"github.com/digitalocean/gocop/sample/fail","Elapsed":0.002}
+{"Time":"2022-10-28T09:22:01.369754696-07:00","Action":"run","Package":"github.com/digitalocean/gocop/sample/pass","Test":"TestWillPass"}
+{"Time":"2022-10-28T09:22:01.369773371-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/pass","Test":"TestWillPass","Output":"=== RUN   TestWillPass\n"}
+{"Time":"2022-10-28T09:22:01.369782496-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/pass","Test":"TestWillPass","Output":"--- PASS: TestWillPass (0.00s)\n"}
+{"Time":"2022-10-28T09:22:01.369788516-07:00","Action":"pass","Package":"github.com/digitalocean/gocop/sample/pass","Test":"TestWillPass","Elapsed":0}
+{"Time":"2022-10-28T09:22:01.36979424-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/pass","Output":"PASS\n"}
+{"Time":"2022-10-28T09:22:01.369797807-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/pass","Output":"coverage: 100.0% of statements\n"}
+{"Time":"2022-10-28T09:22:01.370293693-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/pass","Output":"ok  \tgithub.com/digitalocean/gocop/sample/pass\t0.002s\tcoverage: 100.0% of statements\n"}
+{"Time":"2022-10-28T09:22:01.370313637-07:00","Action":"pass","Package":"github.com/digitalocean/gocop/sample/pass","Elapsed":0.002}
+{"Time":"2022-10-28T09:22:01.376208599-07:00","Action":"run","Package":"github.com/digitalocean/gocop/sample/flaky","Test":"TestMightFail"}
+{"Time":"2022-10-28T09:22:01.376225372-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/flaky","Test":"TestMightFail","Output":"=== RUN   TestMightFail\n"}
+{"Time":"2022-10-28T09:22:01.376236413-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/flaky","Test":"TestMightFail","Output":"--- PASS: TestMightFail (0.00s)\n"}
+{"Time":"2022-10-28T09:22:01.376239508-07:00","Action":"pass","Package":"github.com/digitalocean/gocop/sample/flaky","Test":"TestMightFail","Elapsed":0}
+{"Time":"2022-10-28T09:22:01.376244446-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/flaky","Output":"PASS\n"}
+{"Time":"2022-10-28T09:22:01.376248066-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/flaky","Output":"coverage: [no statements]\n"}
+{"Time":"2022-10-28T09:22:01.376563739-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/flaky","Output":"ok  \tgithub.com/digitalocean/gocop/sample/flaky\t0.001s\tcoverage: [no statements]\n"}
+{"Time":"2022-10-28T09:22:01.37658468-07:00","Action":"pass","Package":"github.com/digitalocean/gocop/sample/flaky","Elapsed":0.001}
+{"Time":"2022-10-28T09:22:01.377000975-07:00","Action":"output","Package":"github.com/digitalocean/gocop/sample/numbers","Output":"?   \tgithub.com/digitalocean/gocop/sample/numbers\t[no test files]\n"}
+{"Time":"2022-10-28T09:22:01.377037895-07:00","Action":"skip","Package":"github.com/digitalocean/gocop/sample/numbers","Elapsed":0}

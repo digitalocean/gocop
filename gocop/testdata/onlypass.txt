@@ -1,0 +1,2 @@
+?   	github.com/digitalocean/gocop/sample/numbers	[no test files]
+ok  	github.com/digitalocean/gocop/sample/pass	0.250s

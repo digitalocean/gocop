@@ -13,19 +13,21 @@ import (
 )
 
 type storeCmdFlags struct {
-	repo       string
-	branch     string
-	sha        string
-	start      string
-	runCommand string
-	src        string
-	buildID    int64
-	bench      bool
-	short      bool
-	race       bool
-	tags       []string
-	retests    []string
-	storerName string
+	repo                   string
+	branch                 string
+	sha                    string
+	start                  string
+	runCommand             string
+	src                    string
+	buildID                int64
+	bench                  bool
+	short                  bool
+	race                   bool
+	tags                   []string
+	retests                []string
+	test2json              bool
+	includeIndividualTests bool
+	storerName             string
 }
 
 var storeFlags struct {
@@ -90,8 +92,25 @@ var storeCmd = &cobra.Command{
 			run.Created = time.Now().UTC()
 		}
 
+		if !storeFlags.test2json && storeFlags.includeIndividualTests {
+			log.Fatal("--include-tests is only supported with --test2json format")
+		}
+
+		if storeFlags.includeIndividualTests {
+			log.Fatal("storing individual tests is not yet supported")
+		}
+
+		var parser gocop.Parser
+		if storeFlags.test2json {
+			parser = &gocop.Test2JSONParser{
+				IncludeIndividualTests: storeFlags.includeIndividualTests,
+			}
+		} else {
+			parser = &gocop.StandardParser{}
+		}
+
 		if len(storeFlags.src) > 0 {
-			tests, err := gocop.ParseFile(storeFlags.src)
+			tests, err := gocop.ParseFile(parser, storeFlags.src)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -103,7 +122,7 @@ var storeCmd = &cobra.Command{
 		}
 
 		if len(storeFlags.retests) > 0 {
-			pkgs, err := gocop.FlakyFilePackages(storeFlags.retests...)
+			pkgs, err := gocop.FlakyFilePackages(parser, storeFlags.retests...)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -149,6 +168,17 @@ func init() {
 	storeCmd.Flags().StringSliceVar(&storeFlags.tags, "tags", []string{}, "comma-separated tags enabled for the run")
 	storeCmd.Flags().StringSliceVarP(&storeFlags.retests, "rerun", "r", []string{}, "comma-separated source output for retests")
 
+	storeCmd.Flags().BoolVarP(
+		&storeFlags.test2json,
+		"test2json", "", false,
+		"set to true if the test output format is test2json format",
+	)
+	storeCmd.Flags().BoolVarP(
+		&storeFlags.includeIndividualTests,
+		"include-tests", "", false,
+		"set to true if you want to store individual test event output (defaults to package events only)",
+	)
+
 	RootCmd.AddCommand(storeCmd)
 	RegisterStorer(&PSQLStorer{})
 }
@@ -188,6 +218,7 @@ type Storer interface {
 	Storer() (storer.Storer, error)
 }
 
+// PSQLStorer represents a postgres storer
 type PSQLStorer struct {
 	host     string
 	port     string
