@@ -1,0 +1,15 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "go-test-matcher",
+            "severity": "error",
+            "pattern": [
+                {
+                    "regexp": "--- FAIL: (.*) \\(.*\\)$",
+                    "file": 1,
+                    "message": 0
+                }
+            ]
+        }
+    ]
+}

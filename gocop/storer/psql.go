@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq" // import postgres driver
 )
 
+// PSQL is a PostgreSQL based storer.
 type PSQL struct {
 	db *sql.DB
 }
